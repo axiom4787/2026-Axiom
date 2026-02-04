@@ -14,16 +14,16 @@ import swervelib.SwerveInputStream;
 
 public class RobotContainer {
   private final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem((new File(Filesystem.getDeployDirectory(),
-                                                                                "swerve/robot")));
-  private final CommandXboxController m_driverController = new CommandXboxController(0); 
+      "swerve/robot")));
+  private final CommandXboxController m_driverController = new CommandXboxController(0);
 
   SwerveInputStream driveAngularVelocity = SwerveInputStream.of(m_swerveSubsystem.getSwerveDrive(),
-                                                              () -> m_driverController.getLeftY() * -1,
-                                                              () -> m_driverController.getLeftX() * -1)
-                                                          .withControllerRotationAxis(m_driverController::getRightX)
-                                                          .deadband(Constants.Swerve.CONTROLLER_DEADBAND)
-                                                          .scaleTranslation(0.8)
-                                                          .allianceRelativeControl(true);
+      () -> m_driverController.getLeftY() * -1,
+      () -> m_driverController.getLeftX() * -1)
+      .withControllerRotationAxis(m_driverController::getRightX)
+      .deadband(Constants.Swerve.CONTROLLER_DEADBAND)
+      .scaleTranslation(0.8)
+      .allianceRelativeControl(true);
 
   public RobotContainer() {
     configureBindings();
