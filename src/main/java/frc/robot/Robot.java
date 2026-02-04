@@ -92,15 +92,12 @@ public class Robot extends TimedRobot {
 
               for (var target : result.getTargets()) {
 
-                  if (target.getFiducialId() == 0) {
+                  // Found Tag 7, record its information
 
-                      // Found Tag 7, record its information
+                  targetYaw = target.getYaw();
 
-                      targetYaw = target.getYaw();
+                  targetVisible = true;
 
-                      targetVisible = true;
-
-                  }
 
               }
 
@@ -110,7 +107,6 @@ public class Robot extends TimedRobot {
       
       SmartDashboard.putBoolean("Vision Target Visible", targetVisible);
       SmartDashboard.putNumber("Vision Target Yaw", targetYaw);
-
   }
   @Override
   public void teleopExit() {}
