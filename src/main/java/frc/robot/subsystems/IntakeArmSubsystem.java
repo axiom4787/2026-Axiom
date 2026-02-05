@@ -15,13 +15,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeRoller;
 
-public class IntakeSubsystem extends SubsystemBase {
+public class IntakeArmSubsystem extends SubsystemBase {
   private final SparkMax m_motor = new SparkMax(
       IntakeRoller.MOTOR_ID, MotorType.kBrushless);
 
   private double m_motorPower = 0.0;
 
-  public IntakeSubsystem() {
+  public IntakeArmSubsystem() {
     m_motor.setCANTimeout(250);
 
     SparkMaxConfig config = new SparkMaxConfig();
@@ -35,13 +35,13 @@ public class IntakeSubsystem extends SubsystemBase {
         PersistMode.kPersistParameters);
   }
 
-  public void setIndexerPower(double motorPower) {
+  public void setArmPower(double motorPower) {
     m_motorPower = motorPower;
     m_motor.set(m_motorPower);
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Intake/Roller Motor Power", m_motorPower);
+    SmartDashboard.putNumber("Intake/Arm Motor Power", m_motorPower);
   }
 }
