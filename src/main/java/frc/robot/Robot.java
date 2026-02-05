@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import static frc.robot.Constants.Vision.*;
-
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -13,15 +11,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import swervelib.SwerveDrive;
 
-import org.photonvision.PhotonCamera;
-
-
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
-
-  private PhotonCamera camera;
 
   public Robot() {
     m_robotContainer = new RobotContainer();
@@ -29,7 +22,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    camera = new PhotonCamera(kCameraName);
+    
   }
   @Override
   public void robotPeriodic() {
@@ -69,44 +62,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-
-      // Read in relevant data from the Camera
-
-      boolean targetVisible = false;
-
-      double targetYaw = 0.0;
-
-      var results = camera.getAllUnreadResults();
-
-      if (!results.isEmpty()) {
-
-          // Camera processed a new frame since last
-
-          // Get the last one in the list.
-
-          var result = results.get(results.size() - 1);
-
-          if (result.hasTargets()) {
-
-              // At least one AprilTag was seen by the camera
-
-              for (var target : result.getTargets()) {
-
-                  // Found Tag 7, record its information
-
-                  targetYaw = target.getYaw();
-
-                  targetVisible = true;
-
-
-              }
-
-          }
-
-      }
-      
-      SmartDashboard.putBoolean("Vision Target Visible", targetVisible);
-      SmartDashboard.putNumber("Vision Target Yaw", targetYaw);
+    
   }
   @Override
   public void teleopExit() {}
