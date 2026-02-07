@@ -41,7 +41,7 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   private final SwerveDrive swerveDrive;
 
-  private final TagKnowledge m_knowledge;
+  private final TagWisdom m_wisdom;
 
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
@@ -49,7 +49,6 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param directory Directory of swerve drive config files.
    */
   public SwerveSubsystem(File directory) {
-    m_knowledge = new TagKnowledge(this::getPose);
     boolean blueAlliance = false;
     Pose2d startingPose = blueAlliance ? new Pose2d(new Translation2d(Meter.of(1),
         Meter.of(4)),
@@ -57,37 +56,27 @@ public class SwerveSubsystem extends SubsystemBase {
         : new Pose2d(new Translation2d(Meter.of(16),
             Meter.of(4)),
             Rotation2d.fromDegrees(180));
-    // Configure the Telemetry before creating the SwerveDrive to avoid unnecessary
-    // objects being created.
     SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
     try {
       swerveDrive = new SwerveParser(directory).createSwerveDrive(Constants.Swerve.MAX_SPEED, startingPose);
-      // Alternative method if you don't want to supply the conversion factor via JSON
-      // files.
-      // swerveDrive = new SwerveParser(directory).createSwerveDrive(maximumSpeed,
-      // angleConversionFactor, driveConversionFactor);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    swerveDrive.setHeadingCorrection(false); // Heading correction should only be used while controlling the robot via
-                                             // angle.
-    swerveDrive.setCosineCompensator(false);// !SwerveDriveTelemetry.isSimulation); // Disables cosine compensation for
-                                            // simulations since it causes discrepancies not seen in real life.
+    swerveDrive.setHeadingCorrection(false); // Heading correction should only be used while controlling the robot via angle.
+    swerveDrive.setCosineCompensator(false);// !SwerveDriveTelemetry.isSimulation); // Disables cosine compensation for simulations since it causes discrepancies not seen in real life.
     swerveDrive.setAngularVelocityCompensation(true,
         true,
-        0.1); // Correct for skew that gets worse as angular velocity increases. Start with a
-              // coefficient of 0.1.
+        0.1); // Correct for skew that gets worse as angular velocity increases. Start with a coefficient of 0.1.
     swerveDrive.setModuleEncoderAutoSynchronize(false,
-        1); // Enable if you want to resynchronize your absolute encoders and motor encoders
-            // periodically when they are not moving.
-    // swerveDrive.pushOffsetsToEncoders(); // Set the absolute encoder to be used
-    // over the internal encoder and push the offsets onto it. Throws warning if not
-    // possible
+        1); // Enable if you want to resynchronize your absolute encoders and motor encoders periodically when they are not moving.
+    // swerveDrive.pushOffsetsToEncoders(); // Set the absolute encoder to be used over the internal encoder and push the offsets onto it. Throws warning if not possible
+
+    m_wisdom = new TagWisdom(swerveDrive.swerveDrivePoseEstimator::addVisionMeasurement);
   }
 
   @Override
   public void periodic() {
-    m_knowledge.updatePoseEstimation(swerveDrive);
+    m_wisdom.periodic();
   }
 
   @Override
