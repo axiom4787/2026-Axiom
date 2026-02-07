@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -16,6 +17,12 @@ public class Constants {
     public static final class Swerve {
         public static final double MAX_SPEED = 4.7;
         public static final double CONTROLLER_DEADBAND = 0.1;
+    }
+
+    public static final class Hubs {
+        public static final Pose2d RED_HUB = new Pose2d();
+        public static final Pose2d BLUE_HUB = new Pose2d();
+        // TODO: Locate the Hubs
     }
 
     public static class Vision {

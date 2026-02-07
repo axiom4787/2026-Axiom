@@ -132,12 +132,6 @@ public class SwerveSubsystem extends SubsystemBase {
     }).finallyDo(() -> swerveDrive.drive(new Translation2d(0, 0), 0, false, false));
   }
 
-  // TODO: Fix Chuddy Buddy
-  /* public Command alignRotation(int id) {
-    TagKnowledge.getAprilTagPose(id, new Transform2d(0, 0, null));
-
-  } */
-
   /**
    * Replaces the swerve module feedforward with a new SimpleMotorFeedforward
    * object.
