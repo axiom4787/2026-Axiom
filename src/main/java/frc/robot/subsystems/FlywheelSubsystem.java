@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -19,39 +20,34 @@ import frc.robot.Constants.Flywheel;
 
 public class FlywheelSubsystem extends SubsystemBase {
   /** Creates a new FlywheelSubsystem. */
-  private final SparkMax m_flywheelMotor = new SparkMax(Flywheel.FLYWHEEL_MOTOR_ID, MotorType.kBrushless);
+  private final SparkFlex m_flywheelMotor = new SparkFlex(Flywheel.FLYWHEEL_MOTOR_ID, MotorType.kBrushless);
 
   private final PIDController m_flywheelPID = new PIDController(
-    Flywheel.FLYWHEEL_P,
-    Flywheel.FLYWHEEL_I,
-    Flywheel.FLYWHEEL_D
-  );
+      Flywheel.FLYWHEEL_P,
+      Flywheel.FLYWHEEL_I,
+      Flywheel.FLYWHEEL_D);
 
   private final SimpleMotorFeedforward m_flywheelFF = new SimpleMotorFeedforward(
-    Flywheel.FLYWHEEL_S,
-    Flywheel.FLYWHEEL_V
-  );
-  
+      Flywheel.FLYWHEEL_S,
+      Flywheel.FLYWHEEL_V);
+
   private double m_desiredSpeed = 0;
 
   public FlywheelSubsystem() {
     SparkMaxConfig config = new SparkMaxConfig();
-    
+
     config
-      .inverted(false)
-      .idleMode(IdleMode.kCoast)
-      .smartCurrentLimit(40)
-      .encoder
+        .inverted(true)
+        .idleMode(IdleMode.kCoast)
+        .smartCurrentLimit(40).encoder
         .velocityConversionFactor(Flywheel.FLYWHEEL_CONVERSION_FACTOR);
 
     m_flywheelMotor.configure(
-      config,
-      ResetMode.kResetSafeParameters,
-      PersistMode.kPersistParameters
-    );
-                            
-                              
-                            
+        config,
+        ResetMode.kResetSafeParameters,
+        PersistMode.kPersistParameters);
+    SmartDashboard.putNumber("Shooter/Setpoint", 0.0);
+    SmartDashboard.putNumber("Shooter/Velocity Gain Setpoint", Flywheel.FLYWHEEL_V);
   }
 
   public void setDesiredSpeed(double desiredSpeed) {
@@ -60,26 +56,26 @@ public class FlywheelSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    m_flywheelFF.setKv(SmartDashboard.getNumber("Shooter/Velocity Gain Setpoint", Flywheel.FLYWHEEL_V));
     double currentSpeed = m_flywheelMotor
-                            .getEncoder()
-                            .getVelocity();
+        .getEncoder()
+        .getVelocity();
 
     SmartDashboard.putNumber("Shooter/Desired Speed", m_desiredSpeed);
     SmartDashboard.putNumber("Shooter/Current Speed", currentSpeed);
-    SmartDashboard.putNumber(
-      "Shooter/Applied Voltage",
-      m_flywheelMotor.getBusVoltage()
-    );
     SmartDashboard.putData("Shooter/PID", m_flywheelPID);
 
-    double feedforward = m_flywheelFF
-                          .calculate(m_desiredSpeed);
+    double feedforward = m_flywheelFF.calculate(m_desiredSpeed);
+
+    double feedback = m_flywheelPID.calculate(currentSpeed, m_desiredSpeed);
     
-    double feedback    = m_flywheelPID
-                          .calculate(m_desiredSpeed, currentSpeed);
+    SmartDashboard.putNumber(
+        "Shooter/Feedforward",
+        feedforward);
+      SmartDashboard.putNumber(
+        "Shooter/Feedback",
+        feedback);
 
     m_flywheelMotor.setVoltage(feedback + feedforward);
-
   }
 }
-
