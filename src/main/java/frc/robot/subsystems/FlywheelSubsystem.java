@@ -33,6 +33,8 @@ public class FlywheelSubsystem extends SubsystemBase {
 
   private double m_desiredSpeed = 0;
 
+  private double m_currentSpeed = 0;
+
   public FlywheelSubsystem() {
     SparkMaxConfig config = new SparkMaxConfig();
 
@@ -54,20 +56,24 @@ public class FlywheelSubsystem extends SubsystemBase {
     m_desiredSpeed = desiredSpeed;
   }
 
+  public boolean atSpeed() {
+    return Math.abs(m_desiredSpeed - m_currentSpeed) < 0.5;
+  }
+
   @Override
   public void periodic() {
     m_flywheelFF.setKv(SmartDashboard.getNumber("Shooter/Velocity Gain Setpoint", Flywheel.FLYWHEEL_V));
-    double currentSpeed = m_flywheelMotor
+    m_currentSpeed = m_flywheelMotor
         .getEncoder()
         .getVelocity();
 
     SmartDashboard.putNumber("Shooter/Desired Speed", m_desiredSpeed);
-    SmartDashboard.putNumber("Shooter/Current Speed", currentSpeed);
+    SmartDashboard.putNumber("Shooter/Current Speed", m_currentSpeed);
     SmartDashboard.putData("Shooter/PID", m_flywheelPID);
 
     double feedforward = m_flywheelFF.calculate(m_desiredSpeed);
 
-    double feedback = m_flywheelPID.calculate(currentSpeed, m_desiredSpeed);
+    double feedback = m_flywheelPID.calculate(m_currentSpeed, m_desiredSpeed);
     
     SmartDashboard.putNumber(
         "Shooter/Feedforward",
