@@ -20,7 +20,8 @@ import frc.robot.Constants.Flywheel;
 
 public class FlywheelSubsystem extends SubsystemBase {
   /** Creates a new FlywheelSubsystem. */
-  private final SparkFlex m_flywheelMotor = new SparkFlex(Flywheel.FLYWHEEL_MOTOR_ID, MotorType.kBrushless);
+  private final SparkFlex m_flywheelSoloMotor = new SparkFlex(Flywheel.FLYWHEEL_SOLO_MOTOR_ID, MotorType.kBrushless);
+  private final SparkFlex m_flywheelDuoUpperMotor = new SparkFlex(Flywheel.FLYWHEEL_DUO_UPPER_MOTOR_ID, MotorType.kBrushless);
 
   private final PIDController m_flywheelPID = new PIDController(
       Flywheel.FLYWHEEL_P,
@@ -42,10 +43,21 @@ public class FlywheelSubsystem extends SubsystemBase {
         .smartCurrentLimit(40).encoder
         .velocityConversionFactor(Flywheel.FLYWHEEL_CONVERSION_FACTOR);
 
-    m_flywheelMotor.configure(
+
+    m_flywheelSoloMotor.configure(
         config,
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
+
+    SparkMaxConfig config2 = new SparkMaxConfig();
+
+    config
+      .follow(m_flywheelSoloMotor, true)
+      .idleMode(IdleMode.kCoast)
+      .smartCurrentLimit(40)
+      .encoder.velocityConversionFactor(Flywheel.FLYWHEEL_CONVERSION_FACTOR);
+
+    m_flywheelDuoUpperMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     SmartDashboard.putNumber("Shooter/Setpoint", 0.0);
     SmartDashboard.putNumber("Shooter/Velocity Gain Setpoint", Flywheel.FLYWHEEL_V);
   }
@@ -57,7 +69,7 @@ public class FlywheelSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     m_flywheelFF.setKv(SmartDashboard.getNumber("Shooter/Velocity Gain Setpoint", Flywheel.FLYWHEEL_V));
-    double currentSpeed = m_flywheelMotor
+    double currentSpeed = m_flywheelSoloMotor
         .getEncoder()
         .getVelocity();
 
@@ -76,6 +88,6 @@ public class FlywheelSubsystem extends SubsystemBase {
         "Shooter/Feedback",
         feedback);
 
-    m_flywheelMotor.setVoltage(feedback + feedforward);
+    m_flywheelSoloMotor.setVoltage(feedback + feedforward);
   }
 }

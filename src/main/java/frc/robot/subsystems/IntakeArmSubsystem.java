@@ -13,11 +13,12 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.IntakeArm;
 import frc.robot.Constants.IntakeRoller;
 
 public class IntakeArmSubsystem extends SubsystemBase {
   private final SparkMax m_motor = new SparkMax(
-      IntakeRoller.MOTOR_ID, MotorType.kBrushless);
+      IntakeArm.MOTOR_ID, MotorType.kBrushless);
 
   private double m_motorPower = 0.0;
 

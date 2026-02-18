@@ -12,7 +12,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Flywheel;
+import frc.robot.Constants.Indexer;
 import frc.robot.subsystems.FlywheelSubsystem;
+import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.Constants.IntakeArm;
 import frc.robot.Constants.IntakeRoller;
 import frc.robot.subsystems.IntakeArmSubsystem;
@@ -28,6 +30,7 @@ public class RobotContainer {
 
   private final IntakeRollerSubsystem m_intakeRollerSubsystem = new IntakeRollerSubsystem();
   private final IntakeArmSubsystem m_intakeArmSubsystem = new IntakeArmSubsystem();
+  private final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
 
   SwerveInputStream driveAngularVelocity = SwerveInputStream.of(m_swerveSubsystem.getSwerveDrive(),
       () -> m_driverController.getLeftY() * -1,
@@ -44,12 +47,14 @@ public class RobotContainer {
   private void configureBindings() {
     m_driverController.rightBumper().toggleOnTrue(new RunCommand(() -> {
       m_intakeRollerSubsystem.setRollerPower(IntakeRoller.INTAKE_POWER);
-      m_intakeArmSubsystem.setArmPower(IntakeArm.DOWN_POWER);
+      m_intakeArmSubsystem.setArmPower(0);
+      m_indexerSubsystem.setPower(-Indexer.POWER);
     }, m_intakeRollerSubsystem));
 
     m_intakeRollerSubsystem.setDefaultCommand(new RunCommand(() -> {
       m_intakeRollerSubsystem.setRollerPower(0.0);
-      m_intakeArmSubsystem.setArmPower(IntakeArm.UP_POWER);
+      m_intakeArmSubsystem.setArmPower(0);
+      m_indexerSubsystem.setPower(0);
     }, m_intakeRollerSubsystem));
 
     Command driveFieldOrientedAngularVelocityCommand = m_swerveSubsystem.driveFieldOriented(driveAngularVelocity);
