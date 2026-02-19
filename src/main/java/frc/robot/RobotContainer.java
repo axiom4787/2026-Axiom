@@ -54,4 +54,8 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     return null;
   }
+
+  public SwerveSubsystem getSwerveSubsystem() {
+    return m_swerveSubsystem;
+  }
 }
