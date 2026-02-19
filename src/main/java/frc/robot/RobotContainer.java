@@ -6,8 +6,6 @@ package frc.robot;
 
 import java.io.File;
 
-import org.dyn4j.geometry.Triangle;
-
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -15,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Conveyor;
-import frc.robot.Constants.Flywheel;
 import frc.robot.Constants.Indexer;
 import frc.robot.subsystems.ConveyorSubsystem;
 import frc.robot.subsystems.FlywheelSubsystem;
@@ -28,9 +25,13 @@ import frc.robot.subsystems.SwerveSubsystem;
 import swervelib.SwerveInputStream;
 
 public class RobotContainer {
+  // Represents the main driver's controller
+  private final CommandXboxController m_driverController = new CommandXboxController(0);
+
+  // Initialize the robot's subsystems
   private final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem((new File(Filesystem.getDeployDirectory(),
       "swerve/robot")));
-  private final CommandXboxController m_driverController = new CommandXboxController(0);
+
   private final FlywheelSubsystem m_flywheelSubsystem = new FlywheelSubsystem();
 
   private final IntakeRollerSubsystem m_intakeRollerSubsystem = new IntakeRollerSubsystem();
@@ -52,6 +53,8 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+    // Intake binds: Right bumper toggles the intake between enabled (arm down, rollers on) and disabled (arm up, rollers off)
+    // The robot always starts the match in the intake disabled state, so that the arm is within the frame perimeter
     m_driverController.rightBumper().toggleOnTrue(new RunCommand(() -> {
       m_intakeRollerSubsystem.setRollerPower(IntakeRoller.INTAKE_POWER);
       m_intakeArmSubsystem.setArmPower(IntakeArm.DOWN_POWER);
@@ -62,10 +65,12 @@ public class RobotContainer {
       m_intakeArmSubsystem.setArmPower(IntakeArm.UP_POWER);
     }, m_intakeRollerSubsystem));
 
+    // Swerve Drive command
     Command driveFieldOrientedAngularVelocityCommand = m_swerveSubsystem.driveFieldOriented(driveAngularVelocity);
     m_swerveSubsystem.setDefaultCommand(driveFieldOrientedAngularVelocityCommand);
   
-   // shooter enabled/disabled logic
+   // Shooter binds: Left bumper toggles the shooter enabled/disabled. This just determines whether the flywheels are on or off
+   // Fuel will not actually be fired until the indexer is enabled to feed fuel into the shooter
 		m_driverController.leftBumper().toggleOnTrue(new RunCommand(() -> {
 			m_flywheelSubsystem.setDesiredSpeed(
 				SmartDashboard.getNumber("Shooter/Setpoint", 0));
@@ -75,13 +80,16 @@ public class RobotContainer {
 			m_flywheelSubsystem.setDesiredSpeed(0.0);
 		}, m_flywheelSubsystem));
   
+    // Fuel will only be fed into the shooter if the flywheels are at their target speed and the Y button is held
     Trigger feed = m_driverController.y().and(m_flywheelSubsystem::atSpeed);
 
+    // Both the indexer and conveyor should be enabled when feeding fuel to ensure the hopper is fully cleared out
     feed.whileTrue(new RunCommand(() -> {
       m_indexerSubsystem.setPower(Indexer.POWER); 
       m_conveyorSubsystem.setPower(Conveyor.POWER);
     }, m_indexerSubsystem, m_conveyorSubsystem));
 
+    // When not feeding, the indexer and conveyor should be disabled
     m_conveyorSubsystem.setDefaultCommand(new RunCommand(() -> {
       m_conveyorSubsystem.setPower(0);
     }, m_conveyorSubsystem));
