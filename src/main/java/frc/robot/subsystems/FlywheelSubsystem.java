@@ -24,8 +24,8 @@ public class FlywheelSubsystem extends SubsystemBase {
   private final SparkFlex m_flywheelSoloMotor = new SparkFlex(Flywheel.FLYWHEEL_SOLO_MOTOR_ID, MotorType.kBrushless);
   private final SparkFlex m_flywheelDuoUpperMotor = new SparkFlex(Flywheel.FLYWHEEL_DUO_UPPER_MOTOR_ID,
       MotorType.kBrushless);
-  private final SparkFlex m_flywheelDuoLowerMotor = new SparkFlex(Flywheel.FLYWHEEL_DUO_UPPER_MOTOR_ID,
-      MotorType.kBrushless);
+  // private final SparkFlex m_flywheelDuoLowerMotor = new SparkFlex(Flywheel.FLYWHEEL_DUO_UPPER_MOTOR_ID,
+  //     MotorType.kBrushless);
 
   private final PIDController m_flywheelPID = new PIDController(
       Flywheel.FLYWHEEL_P,
@@ -67,10 +67,10 @@ public class FlywheelSubsystem extends SubsystemBase {
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
 
-    m_flywheelDuoLowerMotor.configure(
-        config2,
-        ResetMode.kResetSafeParameters,
-        PersistMode.kPersistParameters);
+    // m_flywheelDuoLowerMotor.configure(
+    //     config2,
+    //     ResetMode.kResetSafeParameters,
+    //     PersistMode.kPersistParameters);
 
     SmartDashboard.putNumber("Shooter/Setpoint", 0.0);
     SmartDashboard.putNumber("Shooter/Velocity Gain Setpoint", Flywheel.FLYWHEEL_V);
