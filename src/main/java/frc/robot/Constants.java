@@ -38,6 +38,6 @@ public class Constants {
     }
     public static final class Indexer {
         public static final int MOTOR_ID = 10;
-        public static final double POWER = 1.0;
+        public static final double POWER = -1.0;
     }
 }
