@@ -9,12 +9,22 @@ public class Constants {
     }
     public static final class IntakeRoller {
         public static final int MOTOR_ID = 14;
-        public static final double INTAKE_POWER = 0.4;
+        public static final double INTAKE_POWER = 0.75;
+
+        // public static final double INTAKE_S = 0.31;
+        // public static final double INTAKE_V = 0;
+        // public static final double INTAKE_P = 0;
+        // public static final double INTAKE_I = 0;
+        // public static final double INTAKE_D = 0;
+
+        // public static final double INTAKE_CONVERSION_FACTOR = ((2.0 / Math.PI) / 60) * (6/5);
+    
+        // public static final double INTAKE_SETPOINT = 25;
     }
     public static final class IntakeArm {
-        public static final int MOTOR_ID = 15;
-        public static final double UP_POWER = 0.3;
-        public static final double DOWN_POWER = -0.3;
+        public static final int MOTOR_ID = 10;
+        public static final double UP_POWER = -0.1;
+        public static final double DOWN_POWER = 0.1;
     }
 
     public static final class Flywheel {
@@ -34,10 +44,10 @@ public class Constants {
     }
     public static final class Conveyor {
         public static final int MOTOR_ID = 9;
-        public static final double POWER = 1.0;
+        public static final double POWER = -0.4;
     }
     public static final class Indexer {
-        public static final int MOTOR_ID = 10;
+        public static final int MOTOR_ID = 15;
         public static final double POWER = -1.0;
     }
 }

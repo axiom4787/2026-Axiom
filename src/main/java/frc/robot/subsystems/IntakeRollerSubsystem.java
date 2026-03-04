@@ -11,10 +11,13 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeRoller;
 
+/** Represents the rollers which pull fuel into the robot's hopper. */
 /** Represents the rollers which pull fuel into the robot's hopper. */
 public class IntakeRollerSubsystem extends SubsystemBase {
   private final SparkFlex m_motor = new SparkFlex(
@@ -28,7 +31,7 @@ public class IntakeRollerSubsystem extends SubsystemBase {
 
     SparkMaxConfig config = new SparkMaxConfig();
     config.inverted(false);
-    config.idleMode(IdleMode.kBrake);
+    config.idleMode(IdleMode.kCoast);
     config.smartCurrentLimit(40);
 
     m_motor.configure(
