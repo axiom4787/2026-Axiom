@@ -14,7 +14,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -41,9 +40,10 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   private final SwerveDrive swerveDrive;
 
+  /**
+   * The unblinking eye.
+   */
   private final TagPrescience tagPrescience;
-
-  private Field2d m_field;
 
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
@@ -74,9 +74,6 @@ public class SwerveSubsystem extends SubsystemBase {
     swerveDrive.setModuleEncoderAutoSynchronize(false,
         1); // Enable if you want to resynchronize your absolute encoders and motor encoders periodically when they are not moving.
     // swerveDrive.pushOffsetsToEncoders(); // Set the absolute encoder to be used over the internal encoder and push the offsets onto it. Throws warning if not possible
-
-    m_field = new Field2d();
-    SmartDashboard.putData(m_field);
   }
 
   @Override
@@ -90,8 +87,6 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     swerveDrive.updateOdometry();
-
-    m_field.setRobotPose(getPose());
   }
 
   @Override
