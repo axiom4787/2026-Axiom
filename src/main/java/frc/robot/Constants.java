@@ -44,10 +44,12 @@ public class Constants {
     }
     public static final class Conveyor {
         public static final int MOTOR_ID = 9;
-        public static final double POWER = -0.4;
+        public static final double FEED_POWER = -0.25; // Set power for feeding fuel to indexer
+        public static final double EJECT_POWER = 0.25; // Set power to eject fuel out of the intake
     }
     public static final class Indexer {
         public static final int MOTOR_ID = 15;
-        public static final double POWER = -1.0;
+        public static final double FEED_POWER = -1.0; // Set power for feeding fuel to shooter
+        public static final double EJECT_POWER = 1.0; // Set power to run backward so no fuel enters shooter
     }
 }

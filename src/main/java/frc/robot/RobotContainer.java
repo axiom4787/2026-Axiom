@@ -10,6 +10,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -51,7 +52,40 @@ public class RobotContainer {
   //     .allianceRelativeControl(false);
 
   public RobotContainer() {
-    configureBindings();
+    NEURALINK();
+  }
+
+  /** Optimal button binds to minimize latency from driver cortex to robot processor. */
+  private void NEURALINK() {
+    // Left Bumper: Toggle intake arm up/down.
+    m_driverController.leftBumper().onTrue(new InstantCommand(() -> {
+      boolean armDown = m_intakeArmSubsystem.isArmDown();
+      m_intakeArmSubsystem.setArmPower(armDown ? IntakeArm.UP_POWER : IntakeArm.DOWN_POWER);
+    }, m_intakeArmSubsystem));
+
+    // Left Trigger: Run the intake rollers while held. Only runs if the intake arm is down.
+    // Also runs the conveyor forward and the indexer backward to ensure all fuel remains within the hopper.
+    m_driverController.leftTrigger(0.25).and(m_intakeArmSubsystem::isArmDown).whileTrue(new RunCommand(() -> {
+      m_intakeRollerSubsystem.setRollerPower(IntakeRoller.INTAKE_POWER);
+      m_conveyorSubsystem.setPower(Conveyor.FEED_POWER);
+      m_indexerSubsystem.setPower(Indexer.EJECT_POWER);
+    }, m_intakeRollerSubsystem, m_intakeArmSubsystem));
+
+    // Right Bumper: Toggle shooter flywheel on/off.
+    m_driverController.rightBumper().toggleOnTrue(new RunCommand(() -> {
+      m_flywheelSubsystem.setDesiredSpeed(
+        SmartDashboard.getNumber("Shooter/Setpoint", 0));
+    }, m_flywheelSubsystem));
+
+    // Right Trigger: Feed fuel into the shooter. Only runs if the shooter is at its desired speed.
+    // The conveyor, intake, and indexer all run forward.
+    m_driverController.rightTrigger(0.25).and(m_flywheelSubsystem::atSpeed).whileTrue(new RunCommand(() -> {
+      m_intakeRollerSubsystem.setRollerPower(IntakeRoller.INTAKE_POWER);
+      m_indexerSubsystem.setPower(Indexer.FEED_POWER);
+      m_conveyorSubsystem.setPower(Conveyor.FEED_POWER);
+    }, m_intakeRollerSubsystem, m_indexerSubsystem, m_conveyorSubsystem)); // TODO: Ensure aimed at target and pose locked
+    
+    // TODO: add outtake functionality
   }
 
   private void configureBindings() {
@@ -102,7 +136,7 @@ public class RobotContainer {
 
     // Both the indexer and conveyor should be enabled when feeding fuel to ensure the hopper is fully cleared out
     feed.whileTrue(new RunCommand(() -> {
-      m_indexerSubsystem.setPower(Indexer.POWER); 
+      m_indexerSubsystem.setPower(Indexer.FEED_POWER); 
       // m_conveyorSubsystem.setPower(Conveyor.POWER);
     }, m_indexerSubsystem, m_conveyorSubsystem));
 

@@ -46,6 +46,10 @@ public class IntakeArmSubsystem extends SubsystemBase {
     m_motor.set(m_motorPower);
   }
 
+  public boolean isArmDown() {
+    return m_motorPower < 0;
+  }
+
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Intake/Arm Motor Power", m_motorPower);
