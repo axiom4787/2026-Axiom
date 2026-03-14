@@ -20,7 +20,7 @@ public class Constants {
     }
 
     public static class Limelight {
-        public static final String LL_NAME = "Zarqa-Al-Yamama"; // Only owls will understand.
+        public static final String LL_NAME = "limelight-zarqa"; // Only owls will understand
 
         // Ignorance is bliss.
         public static final Matrix<N3, N1> SINGLE_TAG_STD_DEVS = VecBuilder.fill(4, 4, 8);
