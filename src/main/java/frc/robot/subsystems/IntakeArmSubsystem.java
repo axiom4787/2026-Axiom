@@ -6,27 +6,34 @@ package frc.robot.subsystems;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeArm;
 
-/** Represents the arm which extends or retracts the robot's fuel intake. */
+/** Represents the arm which deploys or stows the robot's fuel intake. */
 public class IntakeArmSubsystem extends SubsystemBase {
-  private final SparkMax m_motor = new SparkMax(
+  private final SparkFlex m_motor = new SparkFlex(
       IntakeArm.MOTOR_ID, MotorType.kBrushless);
 
-  private double m_motorPower = 0.0;
+  private final PIDController m_armPID = new PIDController(
+    IntakeArm.ARM_P, 
+    IntakeArm.ARM_I, 
+    IntakeArm.ARM_D);
+
+  private boolean m_isDeployed = false; // True if the intake should be deployed, false if it should be stowed.
+  private double m_currentAngle = IntakeArm.STOW_SETPOINT; // Represents the actual angle of the intake arm via encoder.
 
   /** Creates a new IntakeArmSubsystem. */
   public IntakeArmSubsystem() {
     m_motor.setCANTimeout(250);
 
-    SparkMaxConfig config = new SparkMaxConfig();
+    SparkFlexConfig config = new SparkFlexConfig();
     config.inverted(false);
     config.idleMode(IdleMode.kBrake);
     config.smartCurrentLimit(40);
@@ -38,20 +45,30 @@ public class IntakeArmSubsystem extends SubsystemBase {
   }
 
   /**
-   * Sets the duty cycle of the arm motor, i.e. what percent of the time the motor is active.
-   * @param motorPower A value between -1.0 and 1.0; negative values run the motor in reverse.
+   * Sets the desired state of the intake arm to deploy or stow.
+   * @param deploy True for deploying, false for stowing.
    */
-  public void setArmPower(double motorPower) {
-    m_motorPower = motorPower;
-    m_motor.set(m_motorPower);
+  public void setDeployed(boolean deploy) {
+    m_isDeployed = deploy;
   }
 
-  public boolean isArmDown() {
-    return m_motorPower < 0;
+  /**
+   * Gets whether the intake arm is deployed (true) or stowed (false)
+   */
+  public boolean isDeployed() {
+    return m_isDeployed;
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Intake/Arm Motor Power", m_motorPower);
+    double setpoint = m_isDeployed ? IntakeArm.DEPLOY_SETPOINT : IntakeArm.STOW_SETPOINT;
+    m_currentAngle = m_motor.getEncoder().getPosition();
+
+    SmartDashboard.putBoolean("Intake/Deployed", m_isDeployed);
+    SmartDashboard.putNumber("Intake/Arm Angle", m_currentAngle);
+    SmartDashboard.putData("Intake/Arm PID", m_armPID);
+
+    double calculation = m_armPID.calculate(m_currentAngle, setpoint);
+    m_motor.set(calculation);
   }
 }

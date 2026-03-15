@@ -15,8 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeRoller;
 
-/** Represents the rollers which pull fuel into the robot's hopper. */
-/** Represents the rollers which pull fuel into the robot's hopper. */
+/** Represents the rollers which intake fuel into the robot's hopper. */
 public class IntakeRollerSubsystem extends SubsystemBase {
   private final SparkFlex m_motor = new SparkFlex(
       IntakeRoller.MOTOR_ID, MotorType.kBrushless);
@@ -39,10 +38,10 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   }
 
   /**
-   * Sets the duty cycle of the intake motor, i.e. what percent of the time the motor is active.
+   * Sets the duty cycle of the intake roller motor, i.e. what percent of the time the motor is active.
    * @param motorPower A value between -1.0 and 1.0; negative values run the motor in reverse.
    */
-  public void setRollerPower(double motorPower) {
+  public void setPower(double motorPower) {
     m_motorPower = motorPower;
     m_motor.set(m_motorPower);
   }

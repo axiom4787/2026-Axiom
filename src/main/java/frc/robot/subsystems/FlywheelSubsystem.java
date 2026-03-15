@@ -17,15 +17,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Flywheel;
 
-/** Represents the flywheels that fire fuel out of the robot. */
+/** Represents the flywheels that launch fuel out of the robot. */
 public class FlywheelSubsystem extends SubsystemBase {
-  // Solo: The singular NEO Vortex motor on the left side
-  // Duo Upper/Lower: The two NEO Vortex motors on the right side
-  private final SparkFlex m_flywheelSoloMotor = new SparkFlex(Flywheel.FLYWHEEL_SOLO_MOTOR_ID, MotorType.kBrushless);
-  private final SparkFlex m_flywheelDuoUpperMotor = new SparkFlex(Flywheel.FLYWHEEL_DUO_UPPER_MOTOR_ID,
+  private final SparkFlex m_rightMotor = new SparkFlex(Flywheel.RIGHT_MOTOR_ID, MotorType.kBrushless);
+  private final SparkFlex m_leftMotor = new SparkFlex(Flywheel.LEFT_MOTOR_ID,
       MotorType.kBrushless);
-  // private final SparkFlex m_flywheelDuoLowerMotor = new SparkFlex(Flywheel.FLYWHEEL_DUO_LOWER_MOTOR_ID,
-  //     MotorType.kBrushless);
 
   private final PIDController m_flywheelPID = new PIDController(
       Flywheel.FLYWHEEL_P,
@@ -50,7 +46,7 @@ public class FlywheelSubsystem extends SubsystemBase {
         .smartCurrentLimit(40).encoder
         .velocityConversionFactor(Flywheel.FLYWHEEL_CONVERSION_FACTOR);
 
-    m_flywheelSoloMotor.configure(
+    m_rightMotor.configure(
         config,
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
@@ -60,20 +56,14 @@ public class FlywheelSubsystem extends SubsystemBase {
     config2
         .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(40)
-        .follow(m_flywheelSoloMotor, true).encoder.velocityConversionFactor(Flywheel.FLYWHEEL_CONVERSION_FACTOR);
+        .follow(m_rightMotor, true).encoder.velocityConversionFactor(Flywheel.FLYWHEEL_CONVERSION_FACTOR);
 
-    m_flywheelDuoUpperMotor.configure(
+    m_leftMotor.configure(
         config2,
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
 
-    // m_flywheelDuoLowerMotor.configure(
-    //     config2,
-    //     ResetMode.kResetSafeParameters,
-    //     PersistMode.kPersistParameters);
-
     SmartDashboard.putNumber("Shooter/Setpoint", 0.0);
-    SmartDashboard.putNumber("Shooter/Velocity Gain Setpoint", Flywheel.FLYWHEEL_V);
   }
 
   /**
@@ -95,8 +85,15 @@ public class FlywheelSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    m_flywheelFF.setKv(SmartDashboard.getNumber("Shooter/Velocity Gain Setpoint", Flywheel.FLYWHEEL_V));
-    m_currentSpeed = m_flywheelSoloMotor.getEncoder().getVelocity();
+    // When the shooter is disabled we don't want it to quickly come to a stop with PID.
+    // Rather, we want it to coast slowly to a stop to avoid damaging the chains.
+    if (m_desiredSpeed == 0) {
+      m_rightMotor.setVoltage(0);
+      return;
+    }
+
+    // Regular PID/Feedforward logic
+    m_currentSpeed = m_rightMotor.getEncoder().getVelocity();
 
     SmartDashboard.putNumber("Shooter/Desired Speed", m_desiredSpeed);
     SmartDashboard.putNumber("Shooter/Current Speed", m_currentSpeed);
@@ -109,6 +106,6 @@ public class FlywheelSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Shooter/Feedforward", feedforward);
     SmartDashboard.putNumber("Shooter/Feedback", feedback);
 
-    m_flywheelSoloMotor.setVoltage(feedback + feedforward);
+    m_rightMotor.setVoltage(feedback + feedforward);
   }
 }

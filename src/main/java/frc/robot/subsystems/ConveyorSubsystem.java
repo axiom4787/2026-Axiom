@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Conveyor;
 
-/** Represents the conveyor that moves balls through the robot's hopper into the shooter. */
+/** Represents the conveyor that moves fuel through the robot's hopper into the shooter. */
 public class ConveyorSubsystem extends SubsystemBase {
   private final SparkMax m_motor = new SparkMax(
       Conveyor.MOTOR_ID, MotorType.kBrushless);
@@ -29,7 +29,7 @@ public class ConveyorSubsystem extends SubsystemBase {
     SparkMaxConfig config = new SparkMaxConfig();
     config.inverted(false);
     config.idleMode(IdleMode.kBrake);
-    config.smartCurrentLimit(40);
+    config.smartCurrentLimit(20);
 
     m_motor.configure(
         config,
@@ -38,8 +38,8 @@ public class ConveyorSubsystem extends SubsystemBase {
   }
 
   /**
-   * Sets the duty cycle of the conveyor motors, i.e. what percent of the time the motors are active.
-   * @param motorPower A value between -1.0 and 1.0; negative values run the motors in reverse.
+   * Sets the duty cycle of the conveyor motor, i.e. what percent of the time the motor is active.
+   * @param motorPower A value between -1.0 and 1.0; negative values run the motor in reverse.
    */
   public void setPower(double motorPower) {
     m_motorPower = motorPower;
