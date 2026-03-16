@@ -6,7 +6,17 @@ package frc.robot;
 
 import java.io.File;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.Targets;
+import frc.robot.Constants.Swerve;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -26,53 +36,61 @@ public class RobotContainer {
   private final SwerveSubsystem m_swerveSubsystem = new SwerveSubsystem((new File(Filesystem.getDeployDirectory(),
       "swerve/robot")));
   private final CommandXboxController m_driverController = new CommandXboxController(0);
+
+  // Base input stream with no rotation control
+  SwerveInputStream baseStream = SwerveInputStream.of(m_swerveSubsystem.getSwerveDrive(),
+      () -> m_driverController.getLeftY() * -1,
+      () -> m_driverController.getLeftX() * -1)
+      .deadband(Swerve.CONTROLLER_DEADBAND)
+      .allianceRelativeControl(true);
+
+  // Input stream and command to drive robot with right joystick as rotation control
+  SwerveInputStream driveAngularVelocity = baseStream.copy()
+    .withControllerRotationAxis(m_driverController::getRightX);
+  Command driveAngVelCommand = m_swerveSubsystem.driveFieldOriented(driveAngularVelocity);
+  
+  // Same as previous, but with slowed inputs for precision
+  Command driveAngVelSlowCommand = m_swerveSubsystem.driveFieldOriented(driveAngularVelocity.copy()
+    .scaleTranslation(0.5)
+    .scaleRotation(0.5));
+  
+  // Command to drive robot while aiming at a target
+  Command driveWithAimCommand = m_swerveSubsystem.driveFieldOriented(baseStream.copy()
+    .scaleTranslation(0.5) // TODO: Determine if slow drive or regular drive is ideal for aiming mode
+    .aim(m_swerveSubsystem::calculateTarget)
+    .aimWhile(true));
   private final FlywheelSubsystem m_flywheelSubsystem = new FlywheelSubsystem();
 
   private final IntakeRollerSubsystem m_intakeRollerSubsystem = new IntakeRollerSubsystem();
   private final IntakeArmSubsystem m_intakeArmSubsystem = new IntakeArmSubsystem();
   private final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
 
-  SwerveInputStream driveAngularVelocity = SwerveInputStream.of(m_swerveSubsystem.getSwerveDrive(),
-      () -> m_driverController.getLeftY() * -1,
-      () -> m_driverController.getLeftX() * -1)
-      .withControllerRotationAxis(m_driverController::getRightX)
-      .deadband(Constants.Swerve.CONTROLLER_DEADBAND)
-      .scaleTranslation(0.8)
-      .allianceRelativeControl(true);
-
   public RobotContainer() {
     configureBindings();
   }
 
   private void configureBindings() {
-    m_driverController.rightBumper().toggleOnTrue(new RunCommand(() -> {
-      m_intakeRollerSubsystem.setRollerPower(IntakeRoller.INTAKE_POWER);
-      m_intakeArmSubsystem.setArmPower(0);
-      m_indexerSubsystem.setPower(-Indexer.POWER);
-    }, m_intakeRollerSubsystem));
 
-    m_intakeRollerSubsystem.setDefaultCommand(new RunCommand(() -> {
-      m_intakeRollerSubsystem.setRollerPower(0.0);
-      m_intakeArmSubsystem.setArmPower(0);
-      m_indexerSubsystem.setPower(0);
-    }, m_intakeRollerSubsystem));
+    // TODO: Map drive controls to FTC controller
+    // Drive controls
+    // B: Aim at selected target while held.
+    // Y: Drive slowly while held.
+    // Left Stick: Lock wheels while held.
+    // A: Reset gyro heading
+    
+    m_driverController.b().whileTrue(driveWithAimCommand);
+    m_driverController.y().whileTrue(driveAngVelSlowCommand);
+    m_driverController.leftStick().whileTrue(new RunCommand(m_swerveSubsystem::lock, m_swerveSubsystem));
+    m_driverController.a().onTrue(new InstantCommand(m_swerveSubsystem::zeroGyro, m_swerveSubsystem)); // TODO: determine if zeroGyroWithAlliance is better
 
-    Command driveFieldOrientedAngularVelocityCommand = m_swerveSubsystem.driveFieldOriented(driveAngularVelocity);
-    m_swerveSubsystem.setDefaultCommand(driveFieldOrientedAngularVelocityCommand);
-  
-   // shooter enabled/disabled logic
-		m_driverController.y().toggleOnTrue(new RunCommand(() -> {
-			m_flywheelSubsystem.setDesiredSpeed(
-				SmartDashboard.getNumber("Shooter/Setpoint", 0));
-		}, m_flywheelSubsystem));
-
-		m_flywheelSubsystem.setDefaultCommand(new RunCommand(() -> {
-			m_flywheelSubsystem.setDesiredSpeed(0.0);
-		}, m_flywheelSubsystem));
-
+    m_swerveSubsystem.setDefaultCommand(driveAngVelCommand);
   }
 
   public Command getAutonomousCommand() {
     return null;
+  }
+
+  public SwerveSubsystem getSwerveSubsystem() {
+    return m_swerveSubsystem;
   }
 }
