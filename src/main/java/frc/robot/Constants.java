@@ -38,11 +38,6 @@ public class Constants {
         // TODO: Tune Intake Arm PID
     }
 
-    public static final class Indexer {
-        public static final int MOTOR_ID = 15;
-        public static final double POWER = 1;
-    }
-
     public static final class Flywheel {
         public static final int RIGHT_MOTOR_ID = 11;
         public static final int LEFT_MOTOR_ID = 12;

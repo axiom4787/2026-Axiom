@@ -5,8 +5,6 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -15,22 +13,15 @@ public class Robot extends TimedRobot {
 
   private final RobotContainer m_robotContainer;
 
-  private final Field2d m_field = new Field2d();
-
   public Robot() {
     m_robotContainer = new RobotContainer();
   }
 
   @Override
-  public void robotInit() {
-    SmartDashboard.putData("Field", m_field);
-  }
+  public void robotInit() {}
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-
-    // Use the swerve subsystem odometry pose for the Field2d
-    m_field.setRobotPose(m_robotContainer.getSwerveSubsystem().getPose());
   }
 
   @Override
