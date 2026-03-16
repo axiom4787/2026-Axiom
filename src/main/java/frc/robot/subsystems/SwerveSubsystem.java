@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
+import frc.robot.Constants.Targets;
 import frc.robot.subsystems.TagPrescience.Revelation;
 
 import java.io.File;
@@ -91,6 +92,27 @@ public class SwerveSubsystem extends SubsystemBase {
 
   @Override
   public void simulationPeriodic() {
+  }
+
+  /**
+   * Calculates where the robot should aim based on its location on the field.
+   * @return The pose to aim at.
+   */
+  public Pose2d calculateTarget() {
+    Pose2d pose = getPose();
+    if (isRedAlliance()) {
+      if (pose.getX() > Targets.RED_ALLIANCE_LINE_X) {
+        return Targets.RED_HUB;
+      } else {
+        return pose.getY() > Targets.CENTER_LINE_Y ? Targets.RED_PASS_OUTPOST : Targets.RED_PASS_DEPOT;
+      }
+    } else {
+      if (pose.getX() < Targets.BLUE_ALLIANCE_LINE_X) {
+        return Targets.BLUE_HUB;
+      } else {
+        return pose.getY() > Targets.CENTER_LINE_Y ? Targets.BLUE_PASS_DEPOT : Targets.BLUE_PASS_OUTPOST;
+      }
+    }
   }
 
   /**
