@@ -17,6 +17,18 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Targets;
 import frc.robot.Constants.Swerve;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.Flywheel;
+import frc.robot.Constants.Indexer;
+import frc.robot.subsystems.FlywheelSubsystem;
+import frc.robot.subsystems.IndexerSubsystem;
+import frc.robot.Constants.IntakeArm;
+import frc.robot.Constants.IntakeRoller;
+import frc.robot.subsystems.IntakeArmSubsystem;
+import frc.robot.subsystems.IntakeRollerSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import swervelib.SwerveInputStream;
 
@@ -47,6 +59,11 @@ public class RobotContainer {
     .scaleTranslation(0.5) // TODO: Determine if slow drive or regular drive is ideal for aiming mode
     .aim(m_swerveSubsystem::calculateTarget)
     .aimWhile(true));
+  private final FlywheelSubsystem m_flywheelSubsystem = new FlywheelSubsystem();
+
+  private final IntakeRollerSubsystem m_intakeRollerSubsystem = new IntakeRollerSubsystem();
+  private final IntakeArmSubsystem m_intakeArmSubsystem = new IntakeArmSubsystem();
+  private final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
 
   public RobotContainer() {
     configureBindings();
