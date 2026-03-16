@@ -6,7 +6,17 @@ package frc.robot;
 
 import java.io.File;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.Targets;
+import frc.robot.Constants.Swerve;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -37,6 +47,30 @@ public class RobotContainer {
   
   private final ConveyorSubsystem m_conveyorSubsystem = new ConveyorSubsystem();
   private final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
+
+  // Base input stream with no rotation control
+  SwerveInputStream baseStream = SwerveInputStream.of(m_swerveSubsystem.getSwerveDrive(),
+      () -> m_driverController.getLeftY() * -1,
+      () -> m_driverController.getLeftX() * -1)
+      .deadband(Swerve.CONTROLLER_DEADBAND)
+      .allianceRelativeControl(true);
+
+  // Input stream and command to drive robot with right joystick as rotation control
+  SwerveInputStream driveAngularVelocity = baseStream.copy()
+    .withControllerRotationAxis(m_driverController::getRightX);
+  Command driveAngVelCommand = m_swerveSubsystem.driveFieldOriented(driveAngularVelocity);
+  
+  // Same as previous, but with slowed inputs for precision
+  Command driveAngVelSlowCommand = m_swerveSubsystem.driveFieldOriented(driveAngularVelocity.copy()
+    .scaleTranslation(0.5)
+    .scaleRotation(0.5));
+  
+  // Command to drive robot while aiming at a target
+  Command driveWithAimCommand = m_swerveSubsystem.driveFieldOriented(baseStream.copy()
+    .scaleTranslation(0.5) // TODO: Determine if slow drive or regular drive is ideal for aiming mode
+    .aim(m_swerveSubsystem::calculateTarget)
+    .aimWhile(true));
+  private final FlywheelSubsystem m_flywheelSubsystem = new FlywheelSubsystem();
 
   public RobotContainer() {
     NEURALINK();
@@ -103,6 +137,20 @@ public class RobotContainer {
     m_flywheelSubsystem.setDefaultCommand(new RunCommand(() -> {
 			m_flywheelSubsystem.setDesiredSpeed(0.0);
 		}, m_flywheelSubsystem));
+
+    // TODO: Map drive controls to FTC controller
+    // Drive controls
+    // B: Aim at selected target while held.
+    // Y: Drive slowly while held.
+    // Left Stick: Lock wheels while held.
+    // A: Reset gyro heading
+    
+    m_driverController.b().whileTrue(driveWithAimCommand);
+    m_driverController.y().whileTrue(driveAngVelSlowCommand);
+    m_driverController.leftStick().whileTrue(new RunCommand(m_swerveSubsystem::lock, m_swerveSubsystem));
+    m_driverController.a().onTrue(new InstantCommand(m_swerveSubsystem::zeroGyro, m_swerveSubsystem)); // TODO: determine if zeroGyroWithAlliance is better
+
+    m_swerveSubsystem.setDefaultCommand(driveAngVelCommand);
   }
 
   public Command getAutonomousCommand() {
