@@ -7,29 +7,29 @@ package frc.robot.subsystems;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.IntakeRoller;
+import frc.robot.Constants.Conveyor;
 
-/** Represents the rollers which intake fuel into the robot's hopper. */
-public class IntakeRollerSubsystem extends SubsystemBase {
-  private final SparkFlex m_motor = new SparkFlex(
-      IntakeRoller.MOTOR_ID, MotorType.kBrushless);
+/** Represents the conveyor that moves fuel through the robot's hopper into the shooter. */
+public class ConveyorSubsystem extends SubsystemBase {
+  private final SparkMax m_motor = new SparkMax(
+      Conveyor.MOTOR_ID, MotorType.kBrushless);
 
   private double m_motorPower = 0.0;
 
-  /** Creates a new IntakeRollerSubsystem. */
-  public IntakeRollerSubsystem() {
+  /** Creates a new ConveyorSubsystem. */
+  public ConveyorSubsystem() {
     m_motor.setCANTimeout(250);
 
     SparkMaxConfig config = new SparkMaxConfig();
     config.inverted(false);
-    config.idleMode(IdleMode.kCoast);
-    config.smartCurrentLimit(40);
+    config.idleMode(IdleMode.kBrake);
+    config.smartCurrentLimit(20);
 
     m_motor.configure(
         config,
@@ -38,7 +38,7 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   }
 
   /**
-   * Sets the duty cycle of the intake roller motor, i.e. what percent of the time the motor is active.
+   * Sets the duty cycle of the conveyor motor, i.e. what percent of the time the motor is active.
    * @param motorPower A value between -1.0 and 1.0; negative values run the motor in reverse.
    */
   public void setPower(double motorPower) {
@@ -48,6 +48,6 @@ public class IntakeRollerSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Intake/Roller Motor Power", m_motorPower);
+    SmartDashboard.putNumber("Conveyor/Motor Power", m_motorPower);
   }
 }

@@ -14,14 +14,15 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Indexer;
-import frc.robot.Constants.IntakeRoller;
 
+/** Represents the roller that controls the flow of fuel into the robot's shooter. */
 public class IndexerSubsystem extends SubsystemBase {
   private final SparkMax m_motor = new SparkMax(
       Indexer.MOTOR_ID, MotorType.kBrushless);
 
   private double m_motorPower = 0.0;
 
+  /** Creates a new IndexerSubsystem. */
   public IndexerSubsystem() {
     m_motor.setCANTimeout(250);
 
@@ -36,6 +37,10 @@ public class IndexerSubsystem extends SubsystemBase {
         PersistMode.kPersistParameters);
   }
 
+  /**
+   * Sets the duty cycle of the indexer motor, i.e. what percent of the time the motor is active.
+   * @param motorPower A value between -1.0 and 1.0; negative values run the motor in reverse.
+   */
   public void setPower(double motorPower) {
     m_motorPower = motorPower;
     m_motor.set(m_motorPower);
