@@ -13,6 +13,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.Flywheel;
@@ -76,6 +77,30 @@ public class FlywheelSubsystem extends SubsystemBase {
   }
 
   /**
+   * Sets the desired speed of the flywheel based on a regression for hub distance.
+   * Targets the top of the hub (72 in. above floor)
+   * @param hubDist Distance from the robot to the hub, in meters.
+   */
+  public void setSpeedHubDist(double hubDistIn) {
+    double hubDist = Units.metersToInches(hubDistIn);
+    // m_desiredSpeed = 0.1*hubDist + 22.25; // high height, including regression data at 45 rad/s and above
+    // m_desiredSpeed = 0.1185*hubDist + 18.635; // with lower hub target height (65 in.)
+    // m_desiredSpeed = 0.11925*hubDist + 18.3; // with lowest hub target height (60 in.)
+    m_desiredSpeed = 0.1175*hubDist + 19.15; // ignoring regression data at 45 rad/s and above
+  }
+
+  /**
+   * Sets the desired speed of the flywheel based on a regression for distance from the alliance zone.
+   * Targets the closest corner of the alliance zone, about 2.15 meters away from the wall diagonally.
+   * @param feedDistIn Distance from the robot to the alliance zone corner, in meters.
+   */
+  public void setSpeedFeedDist(double feedDistIn) {
+    double feedDist = Units.metersToInches(feedDistIn);
+    // m_desiredSpeed = 1.542*Math.pow(feedDist, 0.62); // including full regression data, power regression
+    m_desiredSpeed = 0.1215*feedDist + 15.31;
+  }
+
+  /**
    * Whether or not the flywheels are at the correct speed (i.e. ready to fire a shot)
    * @return True if the current speed is within 0.5 radians per second of the speed setpoint, false otherwise.
    */
@@ -85,9 +110,10 @@ public class FlywheelSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // When the shooter is disabled we don't want it to quickly come to a stop with PID.
-    // Rather, we want it to coast slowly to a stop to avoid damaging the chains.
-    if (m_desiredSpeed == 0) {
+    // When the shooter is disabled or needs to decrease speed, we don't want it to quickly come to a stop with PID.
+    // Rather, we want it to coast slowly to a stop or down to the new setpoint to avoid damaging the chains.
+    // Essentially, the shooter should never run backward if possible, so that the chain always rotates one way.
+    if (m_desiredSpeed == 0 || m_currentSpeed > m_desiredSpeed) {
       m_rightMotor.setVoltage(0);
       return;
     }

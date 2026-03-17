@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Swerve;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.Conveyor;
 import frc.robot.Constants.Indexer;
 import frc.robot.subsystems.ConveyorSubsystem;
@@ -22,6 +21,7 @@ import frc.robot.Constants.IntakeRoller;
 import frc.robot.subsystems.IntakeArmSubsystem;
 import frc.robot.subsystems.IntakeRollerSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.SwerveSubsystem.AimMode;
 import swervelib.SwerveInputStream;
 
 public class RobotContainer {
@@ -60,7 +60,7 @@ public class RobotContainer {
   // Command to drive robot while aiming at a target
   Command driveWithAimCommand = m_swerveSubsystem.driveFieldOriented(baseStream.copy()
     .scaleTranslation(0.5) // TODO: Determine if slow drive or regular drive is ideal for aiming mode
-    .aim(m_swerveSubsystem::calculateTarget)
+    .aim(m_swerveSubsystem::getTarget)
     .aimWhile(true));
 
   public RobotContainer() {
@@ -82,10 +82,14 @@ public class RobotContainer {
       m_indexerSubsystem.setPower(Indexer.EJECT_POWER);
     }, m_intakeRollerSubsystem, m_intakeArmSubsystem, m_conveyorSubsystem, m_indexerSubsystem));
 
-    // Right Bumper: Toggle shooter flywheel on/off.
+    // Right Bumper: Toggle shooter flywheel on/off. Flywheel speed will be set based on the reported aim target.
     m_driverController.rightBumper().toggleOnTrue(new RunCommand(() -> {
-      m_flywheelSubsystem.setDesiredSpeed(
-        SmartDashboard.getNumber("Shooter/Setpoint", 0));
+      double dist = m_swerveSubsystem.getTargetDistance();
+      if (m_swerveSubsystem.getAimMode() == AimMode.HUB) {
+        m_flywheelSubsystem.setSpeedHubDist(dist);
+      } else {
+        m_flywheelSubsystem.setSpeedFeedDist(dist);
+      }
     }, m_flywheelSubsystem));
 
     // Right Trigger: Feed fuel into the shooter. Only runs if the shooter is at its desired speed.
@@ -94,7 +98,7 @@ public class RobotContainer {
       m_intakeRollerSubsystem.setPower(IntakeRoller.INTAKE_POWER);
       m_indexerSubsystem.setPower(Indexer.FEED_POWER);
       m_conveyorSubsystem.setPower(Conveyor.FEED_POWER);
-    }, m_intakeRollerSubsystem, m_indexerSubsystem, m_conveyorSubsystem)); // TODO: Ensure aimed at target and pose locked
+    }, m_intakeRollerSubsystem, m_indexerSubsystem, m_conveyorSubsystem));
     
     // X: Eject all fuel from the robot if possible while held.
     // Conveyor, intake, indexer all run backward and the shooter is paused.
@@ -133,12 +137,12 @@ public class RobotContainer {
     // Drive controls
     // B: Aim at selected target while held.
     // Y: Drive slowly while held.
-    // Left Stick: Lock wheels while held.
+    // Left Stick: Lock wheels while held. Also triggers when shooting to counter defense.
     // A: Reset gyro heading
     
     m_driverController.b().whileTrue(driveWithAimCommand);
     m_driverController.y().whileTrue(driveAngVelSlowCommand);
-    m_driverController.leftStick().whileTrue(new RunCommand(m_swerveSubsystem::lock, m_swerveSubsystem));
+    m_driverController.leftStick().or(m_driverController.rightTrigger()).whileTrue(new RunCommand(m_swerveSubsystem::lock, m_swerveSubsystem));
     m_driverController.a().onTrue(new InstantCommand(m_swerveSubsystem::zeroGyro, m_swerveSubsystem)); // TODO: determine if zeroGyroWithAlliance is better
 
     m_swerveSubsystem.setDefaultCommand(driveAngVelCommand);

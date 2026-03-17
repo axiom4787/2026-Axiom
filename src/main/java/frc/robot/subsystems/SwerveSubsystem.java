@@ -46,6 +46,12 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   private final TagPrescience tagPrescience;
 
+  private AimMode m_aimMode = AimMode.HUB;
+
+  private Pose2d m_aimTarget = Pose2d.kZero;
+
+  private double m_targetDist = 0;
+
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
    *
@@ -88,6 +94,28 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     swerveDrive.updateOdometry();
+
+    Pose2d pose = getPose();
+
+    if (isRedAlliance()) {
+      if (pose.getX() > Targets.RED_ALLIANCE_LINE_X) {
+        m_aimMode = AimMode.HUB;
+        m_aimTarget = Targets.RED_HUB;
+      } else {
+        m_aimMode = AimMode.FEED;
+        m_aimTarget = pose.getY() > Targets.CENTER_LINE_Y ? Targets.RED_PASS_OUTPOST : Targets.RED_PASS_DEPOT;
+      }
+    } else {
+      if (pose.getX() < Targets.BLUE_ALLIANCE_LINE_X) {
+        m_aimMode = AimMode.HUB;
+        m_aimTarget = Targets.BLUE_HUB;
+      } else {
+        m_aimMode = AimMode.FEED;
+        m_aimTarget = pose.getY() > Targets.CENTER_LINE_Y ? Targets.BLUE_PASS_DEPOT : Targets.BLUE_PASS_OUTPOST;
+      }
+    }
+
+    m_targetDist = pose.getTranslation().getDistance(m_aimTarget.getTranslation());
   }
 
   @Override
@@ -95,24 +123,24 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   /**
-   * Calculates where the robot should aim based on its location on the field.
-   * @return The pose to aim at.
+   * Gets where the robot should aim based on its location on the field.
    */
-  public Pose2d calculateTarget() {
-    Pose2d pose = getPose();
-    if (isRedAlliance()) {
-      if (pose.getX() > Targets.RED_ALLIANCE_LINE_X) {
-        return Targets.RED_HUB;
-      } else {
-        return pose.getY() > Targets.CENTER_LINE_Y ? Targets.RED_PASS_OUTPOST : Targets.RED_PASS_DEPOT;
-      }
-    } else {
-      if (pose.getX() < Targets.BLUE_ALLIANCE_LINE_X) {
-        return Targets.BLUE_HUB;
-      } else {
-        return pose.getY() > Targets.CENTER_LINE_Y ? Targets.BLUE_PASS_DEPOT : Targets.BLUE_PASS_OUTPOST;
-      }
-    }
+  public Pose2d getTarget() {
+    return m_aimTarget;
+  }
+
+  /**
+   * Gets how far the calculated aim target is from the robot, in meters.
+   */
+  public double getTargetDistance() {
+    return m_targetDist;
+  }
+
+  /**
+   * Gets whether the calculated aim target is a hub or a feed zone, based on the latest call to calculateTarget.
+   */
+  public AimMode getAimMode() {
+    return m_aimMode;
   }
 
   /**
@@ -496,5 +524,10 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   public SwerveDrive getSwerveDrive() {
     return swerveDrive;
+  }
+
+  public enum AimMode {
+    HUB,
+    FEED
   }
 }
