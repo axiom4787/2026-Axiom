@@ -85,6 +85,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // Update pose estimator based on vision results
     Revelation revelation = tagPrescience.consult();
 
     SmartDashboard.putBoolean("Clarity Provided", revelation.isManifest());
@@ -95,6 +96,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     swerveDrive.updateOdometry();
 
+    // Calculate which target to aim at, target type, and target distance for auto-aim purposes.
     Pose2d pose = getPose();
 
     if (isRedAlliance()) {

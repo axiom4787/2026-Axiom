@@ -61,6 +61,9 @@ public class Constants {
         public static final double EJECT_POWER = 1.0;
     }
 
+    // Time saved using this method: 12 seconds
+    // Time spent writing this method: 11.999 seconds
+    // Overall judgement: Innovative And Efficient Refactoring
     private static Pose2d makeTarget(double x, double y)
     {
         return new Pose2d(new Translation2d(x, y), Rotation2d.kZero);
@@ -70,10 +73,12 @@ public class Constants {
         public static final double FIELD_LENGTH = 16.5405;
         public static final double FIELD_WIDTH = 8.0695;
 
+        // Boundaries for zones of the field, used to determine which target to aim at
         public static final double BLUE_ALLIANCE_LINE_X = 4.4;
         public static final double RED_ALLIANCE_LINE_X = FIELD_LENGTH-4.4;
         public static final double CENTER_LINE_Y = FIELD_WIDTH/2;
 
+        // Targets for the shooter to aim at
         public static final Pose2d BLUE_HUB = makeTarget(4.625, CENTER_LINE_Y);
         public static final Pose2d RED_HUB = makeTarget(FIELD_LENGTH-4.625, CENTER_LINE_Y);
         public static final Pose2d BLUE_PASS_OUTPOST = makeTarget(1.5, 1.5);
@@ -83,7 +88,7 @@ public class Constants {
     }
 
     public static class Limelight {
-        public static final String LL_NAME = "limelight-zarqa"; // Only owls will understand
+        public static final String LL_NAME = "limelight-zarqa"; // Look up Zarqa Al-Yamama for ball knowledge
 
         // Ignorance is bliss.
         public static final Matrix<N3, N1> SINGLE_TAG_STD_DEVS = VecBuilder.fill(4, 4, 8);
