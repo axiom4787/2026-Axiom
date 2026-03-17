@@ -6,7 +6,10 @@ package frc.robot;
 
 import java.io.File;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -40,6 +43,8 @@ public class RobotContainer {
   private final ConveyorSubsystem m_conveyorSubsystem = new ConveyorSubsystem();
   private final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
 
+  private final SendableChooser<Command> autoChooser;
+
   // Base input stream with no rotation control
   SwerveInputStream baseStream = SwerveInputStream.of(m_swerveSubsystem.getSwerveDrive(),
       () -> m_driverController.getLeftY() * -1,
@@ -65,6 +70,7 @@ public class RobotContainer {
 
   public RobotContainer() {
     NEURALINK();
+    autoChooser = AutoBuilder.buildAutoChooser();
   }
 
   /** Optimal button binds to minimize latency from driver cortex to robot processor. */
@@ -149,6 +155,6 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return null;
+    return autoChooser.getSelected();
   }
 }

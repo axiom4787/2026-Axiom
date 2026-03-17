@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
+import frc.robot.Constants.Swerve;
 import frc.robot.Constants.Targets;
 import frc.robot.subsystems.TagPrescience.Revelation;
 
@@ -26,6 +27,11 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
@@ -122,6 +128,25 @@ public class SwerveSubsystem extends SubsystemBase {
 
   @Override
   public void simulationPeriodic() {
+  }
+
+  public void pathplannerInit() {
+    RobotConfig config;
+    try {
+      config = RobotConfig.fromGUISettings();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    AutoBuilder.configure(
+      this::getPose,
+      this::resetOdometry,
+      this::getRobotVelocity,
+      (speeds, feedforwards) -> drive(speeds),
+      Swerve.PP_CONTROLLER,
+      config,
+      this::isRedAlliance,
+      this);
   }
 
   /**
