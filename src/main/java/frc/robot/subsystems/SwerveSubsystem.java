@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Meter;
-
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,11 +12,13 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
+import frc.robot.Constants.Limelight;
 import frc.robot.Constants.Swerve;
 import frc.robot.Constants.Targets;
 import frc.robot.subsystems.TagPrescience.Revelation;
@@ -29,7 +29,6 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 
 import swervelib.SwerveController;
@@ -58,6 +57,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private double m_targetDist = 0;
 
+  private Field2d field = new Field2d();
+
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
    *
@@ -66,13 +67,16 @@ public class SwerveSubsystem extends SubsystemBase {
   public SwerveSubsystem(File directory) {
     tagPrescience = new TagPrescience();
 
-    boolean blueAlliance = false;
-    Pose2d startingPose = blueAlliance ? new Pose2d(new Translation2d(Meter.of(1),
-        Meter.of(4)),
-        Rotation2d.fromDegrees(0))
-        : new Pose2d(new Translation2d(Meter.of(16),
-            Meter.of(4)),
-            Rotation2d.fromDegrees(180));
+    SmartDashboard.putData("Full Field", field);
+
+    Pose2d startingPose = Pose2d.kZero;
+    // boolean blueAlliance = false;
+    // Pose2d startingPose = blueAlliance ? new Pose2d(new Translation2d(Meter.of(1),
+    //     Meter.of(4)),
+    //     Rotation2d.fromDegrees(0))
+    //     : new Pose2d(new Translation2d(Meter.of(16),
+    //         Meter.of(4)),
+    //         Rotation2d.fromDegrees(180));
     SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
     try {
       swerveDrive = new SwerveParser(directory).createSwerveDrive(Constants.Swerve.MAX_SPEED, startingPose);
@@ -87,6 +91,9 @@ public class SwerveSubsystem extends SubsystemBase {
     swerveDrive.setModuleEncoderAutoSynchronize(false,
         1); // Enable if you want to resynchronize your absolute encoders and motor encoders periodically when they are not moving.
     // swerveDrive.pushOffsetsToEncoders(); // Set the absolute encoder to be used over the internal encoder and push the offsets onto it. Throws warning if not possible
+    
+    swerveDrive.swerveDrivePoseEstimator.setVisionMeasurementStdDevs(Limelight.SINGLE_TAG_STD_DEVS);
+    pathplannerInit();
   }
 
   @Override
@@ -97,6 +104,7 @@ public class SwerveSubsystem extends SubsystemBase {
     SmartDashboard.putBoolean("Clarity Provided", revelation.isManifest());
 
     if (revelation.isManifest()) {
+      // swerveDrive.addVisionMeasurement(new Pose2d(revelation.presence().getTranslation(), getPose().getRotation()), revelation.moment());
       swerveDrive.addVisionMeasurement(revelation.presence(), revelation.moment());
     }
 
@@ -123,7 +131,12 @@ public class SwerveSubsystem extends SubsystemBase {
       }
     }
 
-    m_targetDist = pose.getTranslation().getDistance(m_aimTarget.getTranslation());
+    m_targetDist = Math.abs(pose.getTranslation().getDistance(m_aimTarget.getTranslation()));
+
+    field.setRobotPose(pose);
+    field.getObject("target").setPose(m_aimTarget);
+    field.getObject("test").setPose(5.689, 1.075, Rotation2d.kZero);
+    SmartDashboard.putString("Shooter/Aim Mode", m_aimMode.toString());
   }
 
   @Override
@@ -401,6 +414,7 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   public void zeroGyro() {
     swerveDrive.zeroGyro();
+    // resetOdometry(new Pose2d(getPose().getTranslation(), Rotation2d.fromDegrees(180)));
   }
 
   /**

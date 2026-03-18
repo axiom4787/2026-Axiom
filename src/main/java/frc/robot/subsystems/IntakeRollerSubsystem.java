@@ -11,6 +11,8 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeRoller;
@@ -20,7 +22,17 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   private final SparkFlex m_motor = new SparkFlex(
       IntakeRoller.MOTOR_ID, MotorType.kBrushless);
 
-  private double m_motorPower = 0.0;
+  private final PIDController m_intakePID = new PIDController(
+    IntakeRoller.INTAKE_P,
+    IntakeRoller.INTAKE_I,
+    IntakeRoller.INTAKE_D);
+
+  private final SimpleMotorFeedforward m_intakeFF = new SimpleMotorFeedforward(
+    IntakeRoller.INTAKE_S,
+    IntakeRoller.INTAKE_V);
+
+  private double m_currentSpeed = 0.0;
+  private double m_desiredSpeed = 0.0;
 
   /** Creates a new IntakeRollerSubsystem. */
   public IntakeRollerSubsystem() {
@@ -30,24 +42,46 @@ public class IntakeRollerSubsystem extends SubsystemBase {
     config.inverted(false);
     config.idleMode(IdleMode.kCoast);
     config.smartCurrentLimit(40);
+    config.encoder.velocityConversionFactor(IntakeRoller.INTAKE_CONVERSION_FACTOR);
 
     m_motor.configure(
         config,
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
+
+    SmartDashboard.putNumber("Intake/VelocityFF", IntakeRoller.INTAKE_V);
+    SmartDashboard.putNumber("Intake/DSPD", 0.0);
   }
 
-  /**
-   * Sets the duty cycle of the intake roller motor, i.e. what percent of the time the motor is active.
-   * @param motorPower A value between -1.0 and 1.0; negative values run the motor in reverse.
-   */
-  public void setPower(double motorPower) {
-    m_motorPower = motorPower;
-    m_motor.set(m_motorPower);
+  public void setDesiredSpeed() {
   }
+
+  // /**
+  //  * Sets the duty cycle of the intake roller motor, i.e. what percent of the time the motor is active.
+  //  * @param motorPower A value between -1.0 and 1.0; negative values run the motor in reverse.
+  //  */
+  // public void setPower(double motorPower) {
+  //   m_motorPower = motorPower;
+  //   m_motor.set(m_motorPower);
+  // }
+
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Intake/Roller Motor Power", m_motorPower);
+    m_currentSpeed = m_motor.getEncoder().getVelocity();
+    m_desiredSpeed = SmartDashboard.getNumber("Intake/DSPD", 0.0);
+
+    m_intakeFF.setKv(SmartDashboard.getNumber("Intake/VelocityFF", 0.0));
+    SmartDashboard.putData(m_intakePID);
+
+    double feedforward = m_intakeFF.calculate(m_desiredSpeed);
+    double feedback = m_intakePID.calculate(m_currentSpeed, m_desiredSpeed);
+
+    SmartDashboard.putNumber("Intake/Feedforward", feedforward);
+    SmartDashboard.putNumber("Intake/Feedback", feedback);
+
+    SmartDashboard.putNumber("Intake/Current Speed", m_currentSpeed);
+
+    m_motor.setVoltage(feedforward + feedback);
   }
 }

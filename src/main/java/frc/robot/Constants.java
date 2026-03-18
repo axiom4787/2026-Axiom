@@ -6,6 +6,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
 import edu.wpi.first.math.Matrix;
 
 
@@ -15,12 +19,26 @@ public class Constants {
         public static final double MAX_SPEED = 4.7;
         public static final double CONTROLLER_DEADBAND = 0.1;
 
+        public static final PPHolonomicDriveController PP_CONTROLLER = new PPHolonomicDriveController(
+            new PIDConstants(5, 10, 0.0),  // translation PID
+            new PIDConstants(5, 0.0, 0.0)); // rotation PID
+
     }
     public static final class IntakeRoller {
         public static final int MOTOR_ID = 14;
 
-        public static final double INTAKE_POWER = 0.75;
+        public static final double INTAKE_POWER = 1;
         public static final double OUTTAKE_POWER = -0.75;
+
+        public static final double INTAKE_S = 0.5;
+        public static final double INTAKE_V = 0.017;
+        public static final double INTAKE_P = 0.0;
+        public static final double INTAKE_I = 0.0;
+        public static final double INTAKE_D = 0.0;
+
+        public static final double INTAKE_GEAR_RATIO = (26.0 / 24.0) * (19.0 / 20.0);
+
+        public static final double INTAKE_CONVERSION_FACTOR = ((2.0 * Math.PI) / 60) * INTAKE_GEAR_RATIO;
     }
     public static final class IntakeArm {
         public static final int MOTOR_ID = 10;
@@ -32,10 +50,8 @@ public class Constants {
         public static final double ARM_I = 0.0;
         public static final double ARM_D = 0.0;
 
-        public static final double STOW_SETPOINT = 0.0;
-        public static final double DEPLOY_SETPOINT = 0.0;
-
-        // TODO: Tune Intake Arm PID
+        public static final double STOW_SETPOINT = 0.5;
+        public static final double DEPLOY_SETPOINT = -0.5;
     }
 
     public static final class Flywheel {
@@ -52,13 +68,14 @@ public class Constants {
     }
     public static final class Conveyor {
         public static final int MOTOR_ID = 9;
-        public static final double FEED_POWER = -0.25;
-        public static final double EJECT_POWER = 0.25;
+        public static final double FEED_POWER = 0.75;
+        public static final double INTAKE_POWER = 0.25;
+        public static final double EJECT_POWER = -0.75;
     }
     public static final class Indexer {
         public static final int MOTOR_ID = 15;
-        public static final double FEED_POWER = -1.0;
-        public static final double EJECT_POWER = 1.0;
+        public static final double FEED_POWER = 1.0;
+        public static final double EJECT_POWER = -1.0;
     }
 
     // Time saved using this method: 12 seconds

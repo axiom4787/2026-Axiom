@@ -42,7 +42,7 @@ public class FlywheelSubsystem extends SubsystemBase {
     SparkMaxConfig config = new SparkMaxConfig();
 
     config
-        .inverted(true)
+        .inverted(false)
         .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(40).encoder
         .velocityConversionFactor(Flywheel.FLYWHEEL_CONVERSION_FACTOR);
@@ -63,8 +63,6 @@ public class FlywheelSubsystem extends SubsystemBase {
         config2,
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
-
-    SmartDashboard.putNumber("Shooter/Setpoint", 0.0);
   }
 
   /**
@@ -85,8 +83,10 @@ public class FlywheelSubsystem extends SubsystemBase {
     double hubDist = Units.metersToInches(hubDistIn);
     // m_desiredSpeed = 0.1*hubDist + 22.25; // high height, including regression data at 45 rad/s and above
     // m_desiredSpeed = 0.1185*hubDist + 18.635; // with lower hub target height (65 in.)
+    m_desiredSpeed = 3.777704*Math.pow(hubDist, 0.455459); // reg height power
+    // m_desiredSpeed = 3.4475*Math.pow(hubDist, 0.471726); // low height power
     // m_desiredSpeed = 0.11925*hubDist + 18.3; // with lowest hub target height (60 in.)
-    m_desiredSpeed = 0.1175*hubDist + 19.15; // ignoring regression data at 45 rad/s and above
+    // m_desiredSpeed = 0.1175*hubDist + 19.15; // ignoring regression data at 45 rad/s and above
   }
 
   /**
@@ -113,16 +113,16 @@ public class FlywheelSubsystem extends SubsystemBase {
     // When the shooter is disabled or needs to decrease speed, we don't want it to quickly come to a stop with PID.
     // Rather, we want it to coast slowly to a stop or down to the new setpoint to avoid damaging the chains.
     // Essentially, the shooter should never run backward if possible, so that the chain always rotates one way.
-    if (m_desiredSpeed == 0 || m_currentSpeed > m_desiredSpeed) {
-      m_rightMotor.setVoltage(0);
-      return;
-    }
+    // if (m_desiredSpeed == 0 || m_currentSpeed > m_desiredSpeed) {
+    //   m_rightMotor.setVoltage(0);
+    //   return;
+    // }
 
     // Regular PID/Feedforward logic
     m_currentSpeed = m_rightMotor.getEncoder().getVelocity();
 
-    SmartDashboard.putNumber("Shooter/Desired Speed", m_desiredSpeed);
-    SmartDashboard.putNumber("Shooter/Current Speed", m_currentSpeed);
+    SmartDashboard.putString("Shooter/Velocity", String.format("%.2f", m_currentSpeed));
+    SmartDashboard.putString("Shooter/Setpoint", String.format("%.2f", m_desiredSpeed));
     SmartDashboard.putData("Shooter/PID", m_flywheelPID);
 
     double feedforward = m_flywheelFF.calculate(m_desiredSpeed);
