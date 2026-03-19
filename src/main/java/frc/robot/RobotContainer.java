@@ -5,6 +5,7 @@
 package frc.robot;
 
 import java.io.File;
+import java.util.Optional;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
@@ -27,8 +28,13 @@ import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeArmSubsystem;
 import frc.robot.subsystems.IntakeRollerSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.subsystems.TheLight;
 import frc.robot.subsystems.SwerveSubsystem.AimMode;
+import frc.robot.subsystems.TheLight.Idle;
+import frc.robot.subsystems.TheLight.States;
 import swervelib.SwerveInputStream;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 public class RobotContainer {
   // Represents the main driver's controller
@@ -45,6 +51,8 @@ public class RobotContainer {
   
   private final ConveyorSubsystem m_conveyorSubsystem = new ConveyorSubsystem();
   private final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
+
+  private final TheLight m_TheLight = new TheLight();
 
   private final SendableChooser<Command> autoChooser;
 
@@ -94,8 +102,14 @@ public class RobotContainer {
       // m_intakeRollerSubsystem.setPower(IntakeRoller.INTAKE_POWER);
       m_conveyorSubsystem.setPower(Conveyor.INTAKE_POWER);
       m_indexerSubsystem.setPower(Indexer.EJECT_POWER);
-      // TODO: LED Pattern for intaking
-    }, m_intakeRollerSubsystem, m_conveyorSubsystem, m_indexerSubsystem));
+      m_TheLight.see(States.INTAKING, true);
+    }, m_intakeRollerSubsystem, m_conveyorSubsystem, m_indexerSubsystem, m_TheLight));
+
+    // TODO: Code Review
+    m_driverController.leftTrigger(0.25)/*.and(m_intakeArmSubsystem::isDeployed)*/.whileFalse(new RunCommand(() -> {
+      // m_intakeRollerSubsystem.setPower(IntakeRoller.INTAKE_POWER);
+      m_TheLight.see(States.INTAKING, false);
+    }, m_TheLight));
 
     // Right Bumper: Toggle shooter flywheel on/off. Flywheel speed will be set based on the reported aim target.
     m_driverController.rightBumper().toggleOnTrue(new RunCommand(() -> {
@@ -103,11 +117,16 @@ public class RobotContainer {
       if (m_swerveSubsystem.getAimMode() == AimMode.HUB) {
         m_flywheelSubsystem.setSpeedHubDist(dist);
         if (m_flywheelSubsystem.atSpeed()) {
-          // TODO: LED Pattern for shooter at speed, ready to score
+          // LED Pattern for shooter at speed, ready to score
+          m_TheLight.see(States.AT_SPEED, true);
         } else {
-          // TODO: LED Pattern for revving up shooter while aiming at hub
+          m_TheLight.see(States.REVVING, true);
+          m_TheLight.see(States.AT_SPEED, false);
         }
       } else {
+        m_TheLight.see(States.REVVING, false);
+        m_TheLight.see(States.AT_SPEED, false);
+
         m_flywheelSubsystem.setSpeedFeedDist(dist);
         if (m_flywheelSubsystem.atSpeed()) {
           // TODO: LED Pattern for shooter at speed, ready to feed
@@ -115,7 +134,7 @@ public class RobotContainer {
           // TODO: LED Pattern for revving up shooter while aiming to feed
         }
       }
-    }, m_flywheelSubsystem));
+    }, m_flywheelSubsystem, m_TheLight));
 
     // Right Trigger: Feed fuel into the shooter. Only runs if the shooter is at its desired speed.
     // The conveyor, intake, and indexer all run forward.
@@ -160,11 +179,14 @@ public class RobotContainer {
 			m_flywheelSubsystem.setDesiredSpeed(0.0);
 		}, m_flywheelSubsystem));
 
-    // TODO: Default command for LED subsystem
-    // Should light up purple when our hub is active (2:40 to 2:10, 0:30 to 0:00, and active shifts) and light up white when our hub is inactive
-    // If our alliance wins auto, our active shifts are 1:45 to 1:20 and 0:55 to 0:30, otherwise our active shifts are 2:10 to 1:45 and 1:20 to 0:55
-    // To determine if we won auto, check which alliance won auto according to the game data and see if it matches our alliance
-    // There is a nice sample function isHubActive() on wpilib: https://docs.wpilib.org/en/stable/docs/yearly-overview/2026-game-data.html which you can steal the logic from
+    // Default command for LED subsystem
+    m_TheLight.setDefaultCommand(new RunCommand(() -> {
+      if (m_TheLight.isHubActive()) {
+        m_TheLight.idle = Idle.ACTIVE;
+      } else {
+        m_TheLight.idle = Idle.INACTIVE;
+      }
+		}, m_TheLight));
 
     // Drive controls
     // B: Aim at selected target while held.

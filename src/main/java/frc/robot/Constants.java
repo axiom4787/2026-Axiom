@@ -77,6 +77,15 @@ public class Constants {
         public static final double FEED_POWER = 1.0;
         public static final double EJECT_POWER = -1.0;
     }
+    public static final class Enlighten {
+        public static final int LIGHT_ID = 0;
+        public static final double IDLE_ACTIVE_COLOR_ID = 0.87; // Blue
+        public static final double IDLE_INACTIVE_COLOR_ID = 0.61; // Blue
+        public static final double INTAKING_COLOR_ID = 0.89; // Blue-Purple
+        public static final double AT_SPEED_COLOR_ID = 0.77; // Green
+        public static final double REVVING_COLOR_ID = 0.73; // Lime
+        public static final double IDLE_COLOR_ID = 0.91; // Purple 
+    }
 
     // Time saved using this method: 12 seconds
     // Time spent writing this method: 11.999 seconds
