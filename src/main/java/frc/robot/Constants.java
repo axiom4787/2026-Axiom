@@ -27,15 +27,15 @@ public class Constants {
     public static final class IntakeRoller {
         public static final int MOTOR_ID = 14;
 
-        public static final double INTAKE_SETPOINT = 80;
+        public static final double INTAKE_SETPOINT = 120;
 
         public static final double INTAKE_S = 0.5;
         public static final double INTAKE_V = 0.017;
-        public static final double INTAKE_P = 0.05;
+        public static final double INTAKE_P = 0.0;
         public static final double INTAKE_I = 0.0;
-        public static final double INTAKE_D = 0.005;
+        public static final double INTAKE_D = 0.0;
 
-        public static final double INTAKE_GEAR_RATIO = (26.0 / 24.0) * (19.0 / 20.0);
+        public static final double INTAKE_GEAR_RATIO = (1.0 / 3.0) * (26.0 / 24.0) * (19.0 / 24.0);
 
         public static final double INTAKE_CONVERSION_FACTOR = ((2.0 * Math.PI) / 60) * INTAKE_GEAR_RATIO;
     }
@@ -67,9 +67,9 @@ public class Constants {
     }
     public static final class Conveyor {
         public static final int MOTOR_ID = 9;
-        public static final double FEED_POWER = 0.75;
-        public static final double INTAKE_POWER = 0.1;
-        public static final double EJECT_POWER = -0.75;
+        public static final double FEED_POWER = 1;
+        public static final double INTAKE_POWER = 0.2;
+        public static final double EJECT_POWER = -1;
     }
     public static final class Indexer {
         public static final int MOTOR_ID = 15;
@@ -116,7 +116,7 @@ public class Constants {
     }
 
     public static class Limelight {
-        public static final String LL_NAME = "limelight-zarqa"; // Look up Zarqa Al-Yamama for ball knowledge
+        public static final String LL3LEFT_NAME = "limelight-zarqa"; // Look up Zarqa Al-Yamama for ball knowledge
 
         // Ignorance is bliss.
         public static final Matrix<N3, N1> SINGLE_TAG_STD_DEVS = VecBuilder.fill(4, 4, 8);

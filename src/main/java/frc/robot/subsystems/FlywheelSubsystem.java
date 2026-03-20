@@ -106,7 +106,7 @@ public class FlywheelSubsystem extends SubsystemBase {
    * @return True if the current speed is within 0.5 radians per second of the speed setpoint, false otherwise.
    */
   public boolean atSpeed() {
-    return Math.abs(m_desiredSpeed - m_currentSpeed) < 0.5;
+    return Math.abs(m_desiredSpeed - m_currentSpeed) < 0.25;
   }
 
   @Override
@@ -122,8 +122,12 @@ public class FlywheelSubsystem extends SubsystemBase {
     // Regular PID/Feedforward logic
     m_currentSpeed = m_rightMotor.getEncoder().getVelocity();
 
-    SmartDashboard.putString("Shooter/Velocity", String.format("%.2f", m_currentSpeed));
-    SmartDashboard.putString("Shooter/Setpoint", String.format("%.2f", m_desiredSpeed));
+    SmartDashboard.putString("Shooter/Velocity Text", String.format("%.2f", m_currentSpeed));
+    SmartDashboard.putString("Shooter/Setpoint Text", String.format("%.2f", m_desiredSpeed));
+
+    SmartDashboard.putNumber("Shooter/Velocity", m_currentSpeed);
+    SmartDashboard.putNumber("Shooter/Setpoint", m_desiredSpeed);
+
     SmartDashboard.putData("Shooter/PID", m_flywheelPID);
 
     double feedforward = m_flywheelFF.calculate(m_desiredSpeed);

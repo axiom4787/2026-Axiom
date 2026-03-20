@@ -6,6 +6,7 @@ package frc.robot;
 
 import java.io.File;
 import java.util.Optional;
+import java.util.jar.Attributes.Name;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -52,7 +53,7 @@ public class RobotContainer {
   private final ConveyorSubsystem m_conveyorSubsystem = new ConveyorSubsystem();
   private final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
 
-  // private final Lighthouse m_lighthouse = new Lighthouse();
+  private final Lighthouse m_lighthouse = new Lighthouse();
 
   private final SendableChooser<Command> autoChooser;
 
@@ -105,9 +106,9 @@ public class RobotContainer {
       m_indexerSubsystem.setPower(Indexer.EJECT_POWER);
     }, m_intakeRollerSubsystem, m_conveyorSubsystem, m_indexerSubsystem));
 
-    // m_driverController.leftTrigger(0.25)/*.and(m_intakeArmSubsystem::isDeployed)*/.whileTrue(new RunCommand(() -> {
-    //   m_lighthouse.guide(Semaphore.INTAKE);
-    // }, m_lighthouse));
+    m_driverController.leftTrigger(0.25)/*.and(m_intakeArmSubsystem::isDeployed)*/.whileTrue(new RunCommand(() -> {
+      m_lighthouse.guide(Semaphore.INTAKE);
+    }, m_lighthouse));
 
     // Right Bumper: Toggle shooter flywheel on/off. Flywheel speed will be set based on the reported aim target.
     m_driverController.rightBumper().toggleOnTrue(new RunCommand(() -> {
@@ -119,32 +120,32 @@ public class RobotContainer {
       }
     }, m_flywheelSubsystem));
 
-    // m_driverController.rightBumper().toggleOnTrue(new RunCommand(() -> {
-    //   if (m_swerveSubsystem.getAimMode() == AimMode.HUB) {
-    //     if (m_flywheelSubsystem.atSpeed()) {
-    //       m_lighthouse.guide(Semaphore.READY_HUB);
-    //     } else {
-    //       m_lighthouse.guide(Semaphore.REVVING_HUB);
-    //     }
-    //   } else {
-    //     if (m_flywheelSubsystem.atSpeed()) {
-    //       m_lighthouse.guide(Semaphore.READY_FEED);
-    //     } else {
-    //       m_lighthouse.guide(Semaphore.REVVING_FEED);
-    //     }
-    //   }
-    // }, m_lighthouse));
+    m_driverController.rightBumper().toggleOnTrue(new RunCommand(() -> {
+      if (m_swerveSubsystem.getAimMode() == AimMode.HUB) {
+        if (m_flywheelSubsystem.atSpeed()) {
+          m_lighthouse.guide(Semaphore.READY_HUB);
+        } else {
+          m_lighthouse.guide(Semaphore.REVVING_HUB);
+        }
+      } else {
+        if (m_flywheelSubsystem.atSpeed()) {
+          m_lighthouse.guide(Semaphore.READY_FEED);
+        } else {
+          m_lighthouse.guide(Semaphore.REVVING_FEED);
+        }
+      }
+    }, m_lighthouse));
 
     // Right Trigger: Feed fuel into the shooter. Only runs if the shooter is at its desired speed.
     // The conveyor, intake, and indexer all run forward.
-    m_driverController.rightTrigger(0.25).and(m_flywheelSubsystem::atSpeed).whileTrue(new RunCommand(() -> {
+    m_driverController.rightTrigger(0.25).whileTrue(new RunCommand(() -> {
       m_indexerSubsystem.setPower(Indexer.FEED_POWER);
       m_conveyorSubsystem.setPower(Conveyor.FEED_POWER);
     }, m_indexerSubsystem, m_conveyorSubsystem));
 
-    // m_driverController.rightTrigger(0.25).and(m_flywheelSubsystem::atSpeed).whileTrue(new RunCommand(() -> {
-    //   m_lighthouse.guide(Semaphore.SHOOT);
-    // }, m_lighthouse).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+    m_driverController.rightTrigger(0.25).whileTrue(new RunCommand(() -> {
+      m_lighthouse.guide(Semaphore.SHOOT);
+    }, m_lighthouse).withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
     
     // X: Eject all fuel from the robot if possible while held.
     // Conveyor, intake, indexer all run backward and the shooter is paused.
@@ -157,9 +158,9 @@ public class RobotContainer {
       m_flywheelSubsystem.setDesiredSpeed(0.0);
     }, m_intakeRollerSubsystem, m_intakeArmSubsystem, m_indexerSubsystem, m_conveyorSubsystem, m_flywheelSubsystem));
 
-    // m_driverController.x().whileTrue(new RunCommand(() -> {
-    //   m_lighthouse.guide(Semaphore.OUTTAKE);
-    // }, m_lighthouse));
+    m_driverController.x().whileTrue(new RunCommand(() -> {
+      m_lighthouse.guide(Semaphore.OUTTAKE);
+    }, m_lighthouse));
 
     // Default Binds: All subsystems disabled when not in use, intake stowed, shooter off, etc.
     
@@ -184,13 +185,13 @@ public class RobotContainer {
 		}, m_flywheelSubsystem));
 
     // Default command for LED subsystem
-    // m_lighthouse.setDefaultCommand(new RunCommand(() -> {
-    //   if (m_lighthouse.triangulate()) {
-    //     m_lighthouse.guide(Semaphore.IDLE_ACTIVE);
-    //   } else {
-    //     m_lighthouse.guide(Semaphore.IDLE_INACTIVE);
-    //   }
-		// }, m_lighthouse));
+    m_lighthouse.setDefaultCommand(new RunCommand(() -> {
+      if (m_lighthouse.triangulate()) {
+        m_lighthouse.guide(Semaphore.IDLE_ACTIVE);
+      } else {
+        m_lighthouse.guide(Semaphore.IDLE_INACTIVE);
+      }
+		}, m_lighthouse));
 
     // Drive controls
     // B: Aim at selected target while held.
@@ -213,6 +214,7 @@ public class RobotContainer {
   }
 
   public void registerNamedCommands() {
+    NamedCommands.registerCommand("Go Back", m_swerveSubsystem.driveBackward().withTimeout(1));
     NamedCommands.registerCommand("Deploy Intake", new RunCommand(() -> m_intakeArmSubsystem.setPower(IntakeArm.DEPLOY_SETPOINT), m_intakeArmSubsystem)
       .withTimeout(1.5)
       .andThen(new InstantCommand(() -> m_intakeArmSubsystem.setPower(0.0), m_intakeArmSubsystem)));

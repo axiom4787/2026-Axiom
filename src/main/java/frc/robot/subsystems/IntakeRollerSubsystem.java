@@ -10,6 +10,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -20,7 +21,7 @@ import frc.robot.Constants.IntakeRoller;
 
 /** Represents the rollers which intake fuel into the robot's hopper. */
 public class IntakeRollerSubsystem extends SubsystemBase {
-  private final SparkMax m_motor = new SparkMax(
+  private final SparkFlex m_motor = new SparkFlex(
       IntakeRoller.MOTOR_ID, MotorType.kBrushless);
 
   private final PIDController m_intakePID = new PIDController(
@@ -39,10 +40,10 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   public IntakeRollerSubsystem() {
     m_motor.setCANTimeout(250);
 
-    SparkMaxConfig config = new SparkMaxConfig();
+    SparkFlexConfig config = new SparkFlexConfig();
     config.inverted(false);
     config.idleMode(IdleMode.kCoast);
-    config.smartCurrentLimit(60);
+    config.smartCurrentLimit(80);
     config.encoder.velocityConversionFactor(IntakeRoller.INTAKE_CONVERSION_FACTOR);
 
     m_motor.configure(
@@ -68,10 +69,14 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     m_currentSpeed = m_motor.getEncoder().getVelocity();
-    SmartDashboard.putNumber("Intake/Desired Speed", m_desiredSpeed);
+
+    SmartDashboard.putString("Intake/Velocity Text", String.format("%.2f", m_currentSpeed));
+    SmartDashboard.putString("Intake/Setpoint Text", String.format("%.2f", m_desiredSpeed));
+
+    SmartDashboard.putNumber("Intake/Velocity", m_currentSpeed);
+    SmartDashboard.putNumber("Intake/Setpoint", m_desiredSpeed);
 
     SmartDashboard.putData("Intake/Roller PID", m_intakePID);
-    SmartDashboard.putNumber("Intake/Current Speed", m_currentSpeed);
 
     if (m_desiredSpeed == 0.0) {
       m_motor.setVoltage(0);

@@ -16,9 +16,16 @@ public class TagPrescience {
   /** A moment of clarity. */
   public record Revelation (boolean isManifest, Pose2d presence, double moment) {};
 
+  private final String m_name;
+
+  public TagPrescience(String name)
+  {
+    m_name = name;
+  }
+
   /** Discerns a revelation. */
   public Revelation consult() {
-    NetworkTable table = NetworkTableInstance.getDefault().getTable(Limelight.LL_NAME);
+    NetworkTable table = NetworkTableInstance.getDefault().getTable(m_name);
     double[] values = table.getEntry("botpose_wpiblue").getDoubleArray(new double[6]);
     double moment = Timer.getFPGATimestamp();
     Pose2d presence = new Pose2d(values[0], values[1], Rotation2d.fromDegrees(values[5]));
