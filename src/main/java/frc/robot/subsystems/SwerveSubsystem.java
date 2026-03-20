@@ -135,8 +135,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
     field.setRobotPose(pose);
     field.getObject("target").setPose(m_aimTarget);
-    field.getObject("test").setPose(5.689, 1.075, Rotation2d.kZero);
     SmartDashboard.putString("Shooter/Aim Mode", m_aimMode.toString());
+    SmartDashboard.putNumber("Shooter/Target Distance", m_targetDist);
   }
 
   @Override

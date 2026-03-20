@@ -35,8 +35,8 @@ public class IntakeArmSubsystem extends SubsystemBase {
 
     SparkMaxConfig config = new SparkMaxConfig();
     config.inverted(false);
-    config.idleMode(IdleMode.kCoast);
-    config.smartCurrentLimit(40);
+    config.idleMode(IdleMode.kBrake);
+    config.smartCurrentLimit(60);
 
     m_motor.configure(
         config,
@@ -49,11 +49,11 @@ public class IntakeArmSubsystem extends SubsystemBase {
   public void setPower(double motorPower)
   {
     m_motorPower = motorPower;
-    m_motor.set(m_motorPower);
   }
 
   @Override
   public void periodic() {
+    m_motor.set(m_motorPower);
     SmartDashboard.putNumber("Intake/Arm Power", m_motorPower);
   }
 }

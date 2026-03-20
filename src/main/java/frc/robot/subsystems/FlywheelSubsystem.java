@@ -8,6 +8,7 @@ import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
@@ -39,12 +40,12 @@ public class FlywheelSubsystem extends SubsystemBase {
 
   /** Creates a new FlywheelSubsystem. */
   public FlywheelSubsystem() {
-    SparkMaxConfig config = new SparkMaxConfig();
+    SparkFlexConfig config = new SparkFlexConfig();
 
     config
         .inverted(false)
         .idleMode(IdleMode.kCoast)
-        .smartCurrentLimit(40).encoder
+        .smartCurrentLimit(80).encoder
         .velocityConversionFactor(Flywheel.FLYWHEEL_CONVERSION_FACTOR);
 
     m_rightMotor.configure(
@@ -52,11 +53,11 @@ public class FlywheelSubsystem extends SubsystemBase {
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
 
-    SparkMaxConfig config2 = new SparkMaxConfig();
+    SparkFlexConfig config2 = new SparkFlexConfig();
 
     config2
         .idleMode(IdleMode.kCoast)
-        .smartCurrentLimit(40)
+        .smartCurrentLimit(80)
         .follow(m_rightMotor, true).encoder.velocityConversionFactor(Flywheel.FLYWHEEL_CONVERSION_FACTOR);
 
     m_leftMotor.configure(
