@@ -8,6 +8,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
@@ -18,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
+import frc.robot.Constants.Flywheel;
 import frc.robot.Constants.Limelight;
 import frc.robot.Constants.Swerve;
 import frc.robot.Constants.Targets;
@@ -55,7 +57,11 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private Pose2d m_aimTarget = Pose2d.kZero;
 
+  private Pose2d m_virtualTarget = new Pose2d();
+
   private double m_targetDist = 0;
+
+  private double m_virtualDist = 0;
 
   private Field2d field = new Field2d();
 
@@ -133,8 +139,31 @@ public class SwerveSubsystem extends SubsystemBase {
 
     m_targetDist = Math.abs(pose.getTranslation().getDistance(m_aimTarget.getTranslation()));
 
+    double regressionTimeOfFlight = m_targetDist; // TODO: TUNE TS YOU CHUD
+    
+    ChassisSpeeds determination = getRobotVelocity();
+
+    // Get the velocity of THAT SPECIFIC POINT
+    ChassisSpeeds shooterVelocity = new ChassisSpeeds(
+        determination.vxMetersPerSecond - (determination.omegaRadiansPerSecond * Flywheel.FLYWHEEL_OFFSET.getY()),
+        determination.vyMetersPerSecond + (determination.omegaRadiansPerSecond * Flywheel.FLYWHEEL_OFFSET.getX()),
+        determination.omegaRadiansPerSecond
+    );
+
+    Twist2d twistingIt = new Twist2d();
+    // Moves in reverse relative to the robot. As the robot moves forward, the tags move closer to it
+    twistingIt.dtheta = -shooterVelocity.omegaRadiansPerSecond * regressionTimeOfFlight;
+    twistingIt.dx = -shooterVelocity.vxMetersPerSecond * regressionTimeOfFlight;
+    twistingIt.dy = -shooterVelocity.vyMetersPerSecond * regressionTimeOfFlight;
+
+    m_virtualTarget = m_aimTarget.exp(twistingIt);
+
+    m_virtualDist = Math.abs(pose.getTranslation().getDistance(m_virtualTarget.getTranslation()));
+
+
     field.setRobotPose(pose);
     field.getObject("target").setPose(m_aimTarget);
+    field.getObject("vtarget").setPose(m_virtualTarget);
     SmartDashboard.putString("Shooter/Aim Mode", m_aimMode.toString());
     SmartDashboard.putNumber("Shooter/Target Distance", m_targetDist);
   }
@@ -166,14 +195,14 @@ public class SwerveSubsystem extends SubsystemBase {
    * Gets where the robot should aim based on its location on the field.
    */
   public Pose2d getTarget() {
-    return m_aimTarget;
+    return m_virtualTarget; 
   }
 
   /**
    * Gets how far the calculated aim target is from the robot, in meters.
    */
   public double getTargetDistance() {
-    return m_targetDist;
+    return m_virtualDist;
   }
 
   /**
