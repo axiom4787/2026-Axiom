@@ -29,7 +29,7 @@ public class ConveyorSubsystem extends SubsystemBase {
     SparkMaxConfig config = new SparkMaxConfig();
     config.inverted(false);
     config.idleMode(IdleMode.kBrake);
-    config.smartCurrentLimit(20);
+    config.smartCurrentLimit(15);
 
     m_motor.configure(
         config,

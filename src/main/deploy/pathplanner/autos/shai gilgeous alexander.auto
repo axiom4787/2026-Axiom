@@ -5,9 +5,21 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "Deploy Intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "MCL-MLT"
+            "pathName": "H-HS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score Hub"
           }
         }
       ]

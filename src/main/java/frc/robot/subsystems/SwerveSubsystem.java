@@ -51,7 +51,7 @@ public class SwerveSubsystem extends SubsystemBase {
   /**
    * The unblinking eye.
    */
-  private final TagPrescience tagPrescience;
+  private final TagPrescience LL3Left;
 
   private AimMode m_aimMode = AimMode.HUB;
 
@@ -71,7 +71,7 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param directory Directory of swerve drive config files.
    */
   public SwerveSubsystem(File directory) {
-    tagPrescience = new TagPrescience();
+    LL3Left = new TagPrescience(Limelight.LL3LEFT_NAME);
 
     SmartDashboard.putData("Full Field", field);
 
@@ -105,11 +105,11 @@ public class SwerveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // Update pose estimator based on vision results
-    Revelation revelation = tagPrescience.consult();
+    Revelation revelation = LL3Left.consult();
 
     SmartDashboard.putBoolean("Clarity Provided", revelation.isManifest());
 
-    if (revelation.isManifest()) {
+    if (revelation.isManifest() && DriverStation.isTeleopEnabled()) {
       // swerveDrive.addVisionMeasurement(new Pose2d(revelation.presence().getTranslation(), getPose().getRotation()), revelation.moment());
       swerveDrive.addVisionMeasurement(revelation.presence(), revelation.moment());
     }
@@ -165,6 +165,7 @@ public class SwerveSubsystem extends SubsystemBase {
     field.getObject("target").setPose(m_aimTarget);
     field.getObject("vtarget").setPose(m_virtualTarget);
     SmartDashboard.putString("Shooter/Aim Mode", m_aimMode.toString());
+    SmartDashboard.putNumber("Shooter/Target Distance", m_targetDist);
   }
 
   @Override
@@ -257,6 +258,12 @@ public class SwerveSubsystem extends SubsystemBase {
   public Command driveForward() {
     return run(() -> {
       swerveDrive.drive(new Translation2d(1, 0), 0, false, false);
+    }).finallyDo(() -> swerveDrive.drive(new Translation2d(0, 0), 0, false, false));
+  }
+
+  public Command driveBackward() {
+    return run(() -> {
+      swerveDrive.drive(new Translation2d(-0.5, 0), 0, false, false);
     }).finallyDo(() -> swerveDrive.drive(new Translation2d(0, 0), 0, false, false));
   }
 

@@ -20,15 +20,14 @@ public class Constants {
         public static final double CONTROLLER_DEADBAND = 0.1;
 
         public static final PPHolonomicDriveController PP_CONTROLLER = new PPHolonomicDriveController(
-            new PIDConstants(5, 10, 0.0),  // translation PID
-            new PIDConstants(5, 0.0, 0.0)); // rotation PID
+            new PIDConstants(15.0, 0.0, 0.05),  // translation PID
+            new PIDConstants(12.0, 0.0, 0.05)); // rotation PID
 
     }
     public static final class IntakeRoller {
         public static final int MOTOR_ID = 14;
 
-        public static final double INTAKE_POWER = 1;
-        public static final double OUTTAKE_POWER = -0.75;
+        public static final double INTAKE_SETPOINT = 120;
 
         public static final double INTAKE_S = 0.5;
         public static final double INTAKE_V = 0.017;
@@ -36,7 +35,7 @@ public class Constants {
         public static final double INTAKE_I = 0.0;
         public static final double INTAKE_D = 0.0;
 
-        public static final double INTAKE_GEAR_RATIO = (26.0 / 24.0) * (19.0 / 20.0);
+        public static final double INTAKE_GEAR_RATIO = (1.0 / 3.0) * (26.0 / 24.0) * (19.0 / 24.0);
 
         public static final double INTAKE_CONVERSION_FACTOR = ((2.0 * Math.PI) / 60) * INTAKE_GEAR_RATIO;
     }
@@ -50,8 +49,8 @@ public class Constants {
         public static final double ARM_I = 0.0;
         public static final double ARM_D = 0.0;
 
-        public static final double STOW_SETPOINT = 0.5;
-        public static final double DEPLOY_SETPOINT = -0.5;
+        public static final double STOW_SETPOINT = 0.15;
+        public static final double DEPLOY_SETPOINT = -0.25;
     }
 
     public static final class Flywheel {
@@ -71,9 +70,9 @@ public class Constants {
     }
     public static final class Conveyor {
         public static final int MOTOR_ID = 9;
-        public static final double FEED_POWER = 0.75;
-        public static final double INTAKE_POWER = 0.25;
-        public static final double EJECT_POWER = -0.75;
+        public static final double FEED_POWER = 1;
+        public static final double INTAKE_POWER = 0.2;
+        public static final double EJECT_POWER = -1;
     }
     public static final class Indexer {
         public static final int MOTOR_ID = 15;
@@ -82,12 +81,15 @@ public class Constants {
     }
     public static final class Enlighten {
         public static final int LIGHT_ID = 0;
-        public static final double IDLE_ACTIVE_COLOR_ID = 0.87; // Blue
-        public static final double IDLE_INACTIVE_COLOR_ID = 0.61; // Blue
-        public static final double INTAKING_COLOR_ID = 0.89; // Blue-Purple
-        public static final double AT_SPEED_COLOR_ID = 0.77; // Green
-        public static final double REVVING_COLOR_ID = 0.73; // Lime
-        public static final double IDLE_COLOR_ID = 0.91; // Purple 
+        public static final double IDLE_ACTIVE_COLOR_ID = 0.91; // Purple
+        public static final double IDLE_INACTIVE_COLOR_ID = 0.95; // Grey
+        public static final double INTAKING_COLOR_ID = -0.07; // Strobe Gold
+        public static final double OUTTAKING_COLOR_ID = -0.11; // Strobe Red
+        public static final double REVVING_HUB_COLOR_ID = 0.69; // Yellow
+        public static final double REVVING_FEED_COLOR_ID = 0.65; // Orange
+        public static final double READY_HUB_COLOR_ID = 0.73; // Lime Green
+        public static final double READY_FEED_COLOR_ID = 0.75; // Dark Green
+        public static final double SHOOT_COLOR_ID = -0.05; // Strobe White
     }
 
     // Time saved using this method: 12 seconds
@@ -117,7 +119,7 @@ public class Constants {
     }
 
     public static class Limelight {
-        public static final String LL_NAME = "limelight-zarqa"; // Look up Zarqa Al-Yamama for ball knowledge
+        public static final String LL3LEFT_NAME = "limelight-zarqa"; // Look up Zarqa Al-Yamama for ball knowledge
 
         // Ignorance is bliss.
         public static final Matrix<N3, N1> SINGLE_TAG_STD_DEVS = VecBuilder.fill(4, 4, 8);

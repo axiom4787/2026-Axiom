@@ -8,7 +8,9 @@ import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -38,22 +40,20 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   public IntakeRollerSubsystem() {
     m_motor.setCANTimeout(250);
 
-    SparkMaxConfig config = new SparkMaxConfig();
+    SparkFlexConfig config = new SparkFlexConfig();
     config.inverted(false);
     config.idleMode(IdleMode.kCoast);
-    config.smartCurrentLimit(40);
+    config.smartCurrentLimit(80);
     config.encoder.velocityConversionFactor(IntakeRoller.INTAKE_CONVERSION_FACTOR);
 
     m_motor.configure(
         config,
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
-
-    SmartDashboard.putNumber("Intake/VelocityFF", IntakeRoller.INTAKE_V);
-    SmartDashboard.putNumber("Intake/DSPD", 0.0);
   }
 
-  public void setDesiredSpeed() {
+  public void setDesiredSpeed(double desiredSpeed) {
+    m_desiredSpeed = desiredSpeed;
   }
 
   // /**
@@ -69,18 +69,27 @@ public class IntakeRollerSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     m_currentSpeed = m_motor.getEncoder().getVelocity();
-    m_desiredSpeed = SmartDashboard.getNumber("Intake/DSPD", 0.0);
 
-    m_intakeFF.setKv(SmartDashboard.getNumber("Intake/VelocityFF", 0.0));
-    SmartDashboard.putData(m_intakePID);
+    SmartDashboard.putString("Intake/Velocity Text", String.format("%.2f", m_currentSpeed));
+    SmartDashboard.putString("Intake/Setpoint Text", String.format("%.2f", m_desiredSpeed));
+
+    SmartDashboard.putNumber("Intake/Velocity", m_currentSpeed);
+    SmartDashboard.putNumber("Intake/Setpoint", m_desiredSpeed);
+
+    SmartDashboard.putData("Intake/Roller PID", m_intakePID);
+
+    if (m_desiredSpeed == 0.0) {
+      m_motor.setVoltage(0);
+      SmartDashboard.putNumber("Intake/Feedforward", 0);
+      SmartDashboard.putNumber("Intake/Feedback", 0);
+      return;
+    }
 
     double feedforward = m_intakeFF.calculate(m_desiredSpeed);
     double feedback = m_intakePID.calculate(m_currentSpeed, m_desiredSpeed);
 
     SmartDashboard.putNumber("Intake/Feedforward", feedforward);
     SmartDashboard.putNumber("Intake/Feedback", feedback);
-
-    SmartDashboard.putNumber("Intake/Current Speed", m_currentSpeed);
 
     m_motor.setVoltage(feedforward + feedback);
   }
