@@ -65,6 +65,9 @@ public class Constants {
         public static final double FLYWHEEL_D = 0.01;
 
         public static final double FLYWHEEL_CONVERSION_FACTOR = (2.0 / Math.PI) / 60;
+
+        public static final Translation2d FLYWHEEL_OFFSET = new Translation2d(0.2, 0.0); // TODO: check cad for correct offset
+
     }
     public static final class Conveyor {
         public static final int MOTOR_ID = 9;

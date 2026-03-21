@@ -29,19 +29,4 @@ public class TagPrescience {
     boolean isManifest = presence.getX() != 0.0 && presence.getY() != 0.0;
     return new Revelation(isManifest, presence, moment);
   }
-
-  public record Projection (Pose2d projected) {};
-  // The motion of the ball will be realtive to the chassis, so we can change where the target is
-  //  by the motion of the chassis for the time the ball is in the air to green every time
-  public Projection seeFuture(Pose2d target, double distance, ChassisSpeeds determination) {
-    double regressionTimeOfFlight = distance; // TODO: TUNE!! In seconds. 
-    
-    Twist2d twistingIt = new Twist2d();
-    // Moves in reverse relative to the robot. As the robot moves forward, the tags move closer to it
-    twistingIt.dtheta = -determination.omegaRadiansPerSecond * regressionTimeOfFlight;
-    twistingIt.dx = -determination.vxMetersPerSecond * regressionTimeOfFlight;
-    twistingIt.dy = -determination.vyMetersPerSecond * regressionTimeOfFlight;
-
-    return new Projection(target.exp(twistingIt));
-  }
 }
