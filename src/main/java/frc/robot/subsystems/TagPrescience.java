@@ -4,21 +4,16 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Twist2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.Kinematics;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.units.measure.Velocity;
-import edu.wpi.first.wpilibj.Timer;
-import frc.robot.Constants.Limelight;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import frc.robot.subsystems.LimelightHelpers.PoseEstimate;
 
 /** The state of knowing an effect before its cause has fully manifested. */
 public class TagPrescience {
   /** A moment of clarity. */
-  public record Revelation (boolean isManifest, Pose2d presence, double moment) {};
+  public record Revelation (boolean isManifest, PoseEstimate presence, Matrix<N3, N1> trust) {};
 
   private final String m_name;
 
@@ -28,12 +23,24 @@ public class TagPrescience {
   }
 
   /** Discerns a revelation. */
-  public Revelation consult() {
-    NetworkTable table = NetworkTableInstance.getDefault().getTable(m_name);
-    double[] values = table.getEntry("botpose_wpiblue").getDoubleArray(new double[6]);
-    double moment = Timer.getFPGATimestamp();
-    Pose2d presence = new Pose2d(values[0], values[1], Rotation2d.fromDegrees(values[5]));
-    boolean isManifest = presence.getX() != 0.0 && presence.getY() != 0.0;
-    return new Revelation(isManifest, presence, moment);
+  public Revelation consult(double yaw, double pitch, double roll) {
+    // To remove pose ambiguity, the limelight needs to know the current robot orientation
+    LimelightHelpers.SetRobotOrientation(m_name, yaw, 0, pitch, 0, roll, 0);
+
+    PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(m_name);
+
+    boolean isManifest = mt2.tagCount > 0;
+    double baseStdDev = 0.05; // TODO: Tune
+
+    int numTags = mt2.tagCount;
+    double avgDist = mt2.avgTagDist;
+    double xyStdDev = baseStdDev * Math.pow(avgDist, 2); // Far tags should be trusted much less than close tags
+
+    xyStdDev /= Math.sqrt(numTags); // More tags should significiantly increase the trust of the measurement
+
+    xyStdDev = Math.max(xyStdDev, 0.01); // We should never trust the vision too much
+
+    Matrix<N3, N1> trust = VecBuilder.fill(xyStdDev, xyStdDev, 999999);
+    return new Revelation(isManifest, mt2, trust);
   }
 }
