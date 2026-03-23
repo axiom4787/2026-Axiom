@@ -142,33 +142,31 @@ public class SwerveSubsystem extends SubsystemBase {
 
     m_targetDist = Math.abs(pose.getTranslation().getDistance(m_aimTarget.getTranslation()));
 
+    m_virtualTarget = Multitasking.calculate(m_aimTarget, pose, getFieldVelocity());
     // 1. Get Field-Relative Robot Velocity
     // We need to know how the robot is moving relative to the FLOOR, not itself.
-    ChassisSpeeds fieldSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
-        getRobotVelocity(), 
-        getHeading() // Your current gyro heading
-    );
+    // ChassisSpeeds fieldSpeeds = getFieldVelocity();
 
-    // 2. Calculate TOF (Ensure distance is in INCHES for the regression)
-    double distMeters = m_aimTarget.getTranslation().getDistance(getPose().getTranslation());
-    double distInches = Units.metersToInches(distMeters);
-    double tof = -0.000000425 * Math.pow(distInches, 2) + 0.00767 * distInches + 0.413;
+    // // 2. Calculate TOF (Ensure distance is in INCHES for the regression)
+    // double distMeters = m_aimTarget.getTranslation().getDistance(getPose().getTranslation());
+    // double distInches = Units.metersToInches(distMeters);
+    // double tof = -0.000000425 * Math.pow(distInches, 2) + 0.00767 * distInches + 0.413;
 
-    SmartDashboard.putNumber("Shooter/Ball TOF", tof);
+    // SmartDashboard.putNumber("Shooter/Ball TOF", tof);
 
-    // 3. Calculate the "Compensation Vector" 
-    // This is how far the ball "drifts" because of the robot's movement
-    Translation2d ballDrift = new Translation2d(
-        fieldSpeeds.vxMetersPerSecond * tof,
-        fieldSpeeds.vyMetersPerSecond * tof
-    );
+    // // 3. Calculate the "Compensation Vector" 
+    // // This is how far the ball "drifts" because of the robot's movement
+    // Translation2d ballDrift = new Translation2d(
+    //     fieldSpeeds.vxMetersPerSecond * tof,
+    //     fieldSpeeds.vyMetersPerSecond * tof
+    // );
 
-    // 4. Create the Virtual Target
-    // Subtract the drift from the goal's real location
-    Translation2d virtualTargetTranslation = m_aimTarget.getTranslation().minus(ballDrift);
+    // // 4. Create the Virtual Target
+    // // Subtract the drift from the goal's real location
+    // Translation2d virtualTargetTranslation = m_aimTarget.getTranslation().minus(ballDrift);
 
-    // 5. Update your Turret/Drive to aim at THIS Translation2d
-    m_virtualTarget = new Pose2d(virtualTargetTranslation, new Rotation2d());    
+    // // 5. Update your Turret/Drive to aim at THIS Translation2d
+    // m_virtualTarget = new Pose2d(virtualTargetTranslation, new Rotation2d());    
 
     // // 1. Convert current distance to inches for the regression
     // double currentDistInches = Units.metersToInches(m_targetDist);
