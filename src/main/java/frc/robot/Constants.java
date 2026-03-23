@@ -55,7 +55,7 @@ public class Constants {
 
     public static final class Flywheel {
         public static final int RIGHT_MOTOR_ID = 6;
-        public static final int LEFT_MOTOR_ID = 2;
+        public static final int LEFT_MOTOR_ID = 3;
         
         public static final double FLYWHEEL_S = 0.15;
         public static final double FLYWHEEL_V = 0.17;
