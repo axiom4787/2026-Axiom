@@ -27,6 +27,7 @@ public class Lighthouse extends SubsystemBase {
     if (alliance.isEmpty()) {
       return false;
     }
+
     // Hub is always enabled in autonomous.
     if (DriverStation.isAutonomousEnabled()) {
       return true;
@@ -47,7 +48,7 @@ public class Lighthouse extends SubsystemBase {
     switch (gameData.charAt(0)) {
       case 'R' -> redInactiveFirst = true;
       case 'B' -> redInactiveFirst = false;
-      default -> {
+      default  -> {
         // If we have invalid game data, assume hub is active.
         return true;
       }
@@ -82,15 +83,15 @@ public class Lighthouse extends SubsystemBase {
 
   public void guide(Semaphore pattern) {
     m_beacon.set(switch(pattern) {
-      case INTAKE -> Enlighten.INTAKING_COLOR_ID;
-      case OUTTAKE -> Enlighten.OUTTAKING_COLOR_ID;
-      case REVVING_HUB -> Enlighten.REVVING_HUB_COLOR_ID;
-      case REVVING_FEED -> Enlighten.REVVING_FEED_COLOR_ID;
-      case READY_HUB -> Enlighten.READY_HUB_COLOR_ID;
-      case READY_FEED-> Enlighten.READY_FEED_COLOR_ID;
-      case SHOOT -> Enlighten.SHOOT_COLOR_ID;
-      case IDLE_ACTIVE -> Enlighten.IDLE_ACTIVE_COLOR_ID;
-      case IDLE_INACTIVE -> Enlighten.IDLE_INACTIVE_COLOR_ID;
+      case INTAKE         -> Enlighten.INTAKING_COLOR_ID;
+      case OUTTAKE        -> Enlighten.OUTTAKING_COLOR_ID;
+      case REVVING_HUB    -> Enlighten.REVVING_HUB_COLOR_ID;
+      case REVVING_FEED   -> Enlighten.REVVING_FEED_COLOR_ID;
+      case READY_HUB      -> Enlighten.READY_HUB_COLOR_ID;
+      case READY_FEED     -> Enlighten.READY_FEED_COLOR_ID;
+      case SHOOT          -> Enlighten.SHOOT_COLOR_ID;
+      case IDLE_ACTIVE    -> Enlighten.IDLE_ACTIVE_COLOR_ID;
+      case IDLE_INACTIVE  -> Enlighten.IDLE_INACTIVE_COLOR_ID;
     });
   }
 
