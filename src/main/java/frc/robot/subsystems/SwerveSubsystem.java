@@ -59,6 +59,9 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private Pose2d m_aimTarget = Pose2d.kZero;
 
+  private double robotOffsetAngle;
+  private double shooterPower;
+
   // private Pose2d m_virtualTarget = new Pose2d();
 
   private double m_targetDist = 0;
@@ -142,8 +145,29 @@ public class SwerveSubsystem extends SubsystemBase {
 
     m_targetDist = Math.abs(pose.getTranslation().getDistance(m_aimTarget.getTranslation()));
 
-    // TODO: calculate alpha and v_0 based on regressions and make them private class variables
+    ChassisSpeeds fieldVel = getFieldVelocity(); // m/s, field frame
+    Translation2d toRobot = pose.getTranslation().minus(m_aimTarget.getTranslation()); // target -> robot
+    double dist = toRobot.getNorm();
 
+    // TODO: calculate alpha and v_0 based on regressions and make them private class variables
+    double speedAway = 0f; // speed away from hub in in/s
+    double tanSp = 0f; // tangential speed around the hub in in/s
+    if (dist > 1e-6) {
+      Translation2d rHat = toRobot.div(dist); // radial unit vector
+      Translation2d tHat = new Translation2d(-rHat.getY(), rHat.getX()); // +90deg rotation (CCW tangent)
+
+      // Dot products against field velocity vector
+      speedAway = fieldVel.vxMetersPerSecond * rHat.getX() + fieldVel.vyMetersPerSecond * rHat.getY();
+      tanSp = fieldVel.vxMetersPerSecond * tHat.getX() + fieldVel.vyMetersPerSecond * tHat.getY();
+
+      speedAway = Units.metersToInches(speedAway);
+      tanSp = Units.metersToInches(tanSp);
+    }
+
+    double distance = Units.metersToInches(m_targetDist);
+    robotOffsetAngle = -0.0318956 * distance + -0.0408457 * speedAway + 0.794935 * tanSp + 3.9899 + 0.000227597 * distance * speedAway + -0.000711198 * distance * tanSp + -0.00213559 * speedAway * tanSp + -0.0000233628 * speedAway * speedAway + -0.0000233628 * tanSp * tanSp; // Ayo what
+    shooterPower = 1.02966 * distance + 1.05898 * speedAway + 0.378579 * tanSp + 177.65162 + 0.00210181 * distance * speedAway + -0.00410096 * distance * tanSp + 0.000379888 * speedAway * tanSp + 0.00405178 * speedAway * speedAway + 0.0108154 * tanSp * tanSp; // Probably can be simplified but im not doing that right now
+    
     // m_virtualTarget = Multitasking.calculate(m_aimTarget, pose, getFieldVelocity());
     // 1. Get Field-Relative Robot Velocity
     // We need to know how the robot is moving relative to the FLOOR, not itself.
@@ -197,6 +221,11 @@ public class SwerveSubsystem extends SubsystemBase {
     field.getObject("target").setPose(m_aimTarget);
     // field.getObject("vtarget").setPose(m_virtualTarget);
     SmartDashboard.putString("Shooter/Aim Mode", m_aimMode.toString());
+    SmartDashboard.putNumber("Shooter/Target Distance (in)", distance);
+    SmartDashboard.putNumber("Shooter/SpeedAway (in_s)", speedAway);
+    SmartDashboard.putNumber("Shooter/TanSpeed (in_s)", tanSp);
+    SmartDashboard.putNumber("Shooter/OffsetAngle (deg)", robotOffsetAngle);
+    SmartDashboard.putNumber("Shooter/Power", shooterPower);
     // SmartDashboard.putNumber("Shooter/Target Distance", m_targetDist);
     // SmartDashboard.putNumber("Shooter/VTarget Distance", m_virtualDist);
   }
@@ -240,11 +269,11 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public Rotation2d getTargetOffset()
   {
-    return Rotation2d.kZero; // TODO: return alpha based on regression
+    return Rotation2d.fromDegrees(robotOffsetAngle);
   }
 
   public double getShootSpeed() {
-    return 0.0; // TODO: return flywheel speed based on v_0 regression
+    return 0.897781 * shooterPower - 11.46442; // Convert to rad/s
   }
 
   /**
