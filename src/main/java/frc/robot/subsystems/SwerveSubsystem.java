@@ -273,7 +273,8 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public double getShootSpeed() {
-    return 0.897781 * shooterPower - 11.46442; // Convert to rad/s
+    // return 0.897781 * shooterPower - 11.46442; // Convert to rad/s
+    return 0.143975 * shooterPower - 11.79053;
   }
 
   /**
