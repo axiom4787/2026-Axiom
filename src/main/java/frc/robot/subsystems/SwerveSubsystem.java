@@ -12,7 +12,9 @@ import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -57,11 +59,14 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private Pose2d m_aimTarget = Pose2d.kZero;
 
-  private Pose2d m_virtualTarget = new Pose2d();
+  private double robotOffsetAngle;
+  private double shooterPower;
+
+  // private Pose2d m_virtualTarget = new Pose2d();
 
   private double m_targetDist = 0;
 
-  private double m_virtualDist = 0;
+  // private double m_virtualDist = 0;
 
   private Field2d field = new Field2d();
 
@@ -76,6 +81,9 @@ public class SwerveSubsystem extends SubsystemBase {
     SmartDashboard.putData("Full Field", field);
 
     Pose2d startingPose = Pose2d.kZero;
+
+    // if (RobotBase.isSimulation())
+    //   startingPose = isRedAlliance() ? Targets.RED_SIM_START : Targets.BLUE_SIM_START;
     // boolean blueAlliance = false;
     // Pose2d startingPose = blueAlliance ? new Pose2d(new Translation2d(Meter.of(1),
     //     Meter.of(4)),
@@ -98,20 +106,18 @@ public class SwerveSubsystem extends SubsystemBase {
         1); // Enable if you want to resynchronize your absolute encoders and motor encoders periodically when they are not moving.
     // swerveDrive.pushOffsetsToEncoders(); // Set the absolute encoder to be used over the internal encoder and push the offsets onto it. Throws warning if not possible
     
-    swerveDrive.swerveDrivePoseEstimator.setVisionMeasurementStdDevs(Limelight.SINGLE_TAG_STD_DEVS);
     pathplannerInit();
   }
 
   @Override
   public void periodic() {
     // Update pose estimator based on vision results
-    Revelation revelation = LL3Left.consult();
+    Revelation revelation = LL3Left.consult(getHeading().getDegrees(), getPitch().getDegrees(), getRoll().getDegrees());
 
     SmartDashboard.putBoolean("Clarity Provided", revelation.isManifest());
-
+    
     if (revelation.isManifest() && DriverStation.isTeleopEnabled()) {
-      // swerveDrive.addVisionMeasurement(new Pose2d(revelation.presence().getTranslation(), getPose().getRotation()), revelation.moment());
-      swerveDrive.addVisionMeasurement(revelation.presence(), revelation.moment());
+      swerveDrive.addVisionMeasurement(revelation.presence().pose, revelation.presence().timestampSeconds, revelation.trust());
     }
 
     swerveDrive.updateOdometry();
@@ -139,33 +145,89 @@ public class SwerveSubsystem extends SubsystemBase {
 
     m_targetDist = Math.abs(pose.getTranslation().getDistance(m_aimTarget.getTranslation()));
 
-    double regressionTimeOfFlight = m_targetDist; // TODO: TUNE TS YOU CHUD
+    ChassisSpeeds fieldVel = getFieldVelocity(); // m/s, field frame
+    Translation2d toRobot = pose.getTranslation().minus(m_aimTarget.getTranslation()); // target -> robot
+    double dist = toRobot.getNorm();
+
+    // TODO: calculate alpha and v_0 based on regressions and make them private class variables
+    double speedAway = 0f; // speed away from hub in in/s
+    double tanSp = 0f; // tangential speed around the hub in in/s
+    if (dist > 1e-6) {
+      Translation2d rHat = toRobot.div(dist); // radial unit vector
+      Translation2d tHat = new Translation2d(-rHat.getY(), rHat.getX()); // +90deg rotation (CCW tangent)
+
+      // Dot products against field velocity vector
+      speedAway = fieldVel.vxMetersPerSecond * rHat.getX() + fieldVel.vyMetersPerSecond * rHat.getY();
+      tanSp = fieldVel.vxMetersPerSecond * tHat.getX() + fieldVel.vyMetersPerSecond * tHat.getY();
+
+      speedAway = Units.metersToInches(speedAway);
+      tanSp = Units.metersToInches(tanSp);
+    }
+
+    double distance = Units.metersToInches(m_targetDist);
+    robotOffsetAngle = -0.0318956 * distance + -0.0408457 * speedAway + 0.794935 * tanSp + 3.9899 + 0.000227597 * distance * speedAway + -0.000711198 * distance * tanSp + -0.00213559 * speedAway * tanSp + -0.0000233628 * speedAway * speedAway + -0.0000233628 * tanSp * tanSp; // Ayo what
+    shooterPower = 1.02966 * distance + 1.05898 * speedAway + 0.378579 * tanSp + 177.65162 + 0.00210181 * distance * speedAway + -0.00410096 * distance * tanSp + 0.000379888 * speedAway * tanSp + 0.00405178 * speedAway * speedAway + 0.0108154 * tanSp * tanSp; // Probably can be simplified but im not doing that right now
     
-    ChassisSpeeds determination = getRobotVelocity();
+    // m_virtualTarget = Multitasking.calculate(m_aimTarget, pose, getFieldVelocity());
+    // 1. Get Field-Relative Robot Velocity
+    // We need to know how the robot is moving relative to the FLOOR, not itself.
+    // ChassisSpeeds fieldSpeeds = getFieldVelocity();
 
-    // Get the velocity of THAT SPECIFIC POINT
-    ChassisSpeeds shooterVelocity = new ChassisSpeeds(
-        determination.vxMetersPerSecond - (determination.omegaRadiansPerSecond * Flywheel.FLYWHEEL_OFFSET.getY()),
-        determination.vyMetersPerSecond + (determination.omegaRadiansPerSecond * Flywheel.FLYWHEEL_OFFSET.getX()),
-        determination.omegaRadiansPerSecond
-    );
+    // // 2. Calculate TOF (Ensure distance is in INCHES for the regression)
+    // double distMeters = m_aimTarget.getTranslation().getDistance(getPose().getTranslation());
+    // double distInches = Units.metersToInches(distMeters);
+    // double tof = -0.000000425 * Math.pow(distInches, 2) + 0.00767 * distInches + 0.413;
 
-    Twist2d twistingIt = new Twist2d();
-    // Moves in reverse relative to the robot. As the robot moves forward, the tags move closer to it
-    twistingIt.dtheta = -shooterVelocity.omegaRadiansPerSecond * regressionTimeOfFlight;
-    twistingIt.dx = -shooterVelocity.vxMetersPerSecond * regressionTimeOfFlight;
-    twistingIt.dy = -shooterVelocity.vyMetersPerSecond * regressionTimeOfFlight;
+    // SmartDashboard.putNumber("Shooter/Ball TOF", tof);
 
-    m_virtualTarget = m_aimTarget.exp(twistingIt);
+    // // 3. Calculate the "Compensation Vector" 
+    // // This is how far the ball "drifts" because of the robot's movement
+    // Translation2d ballDrift = new Translation2d(
+    //     fieldSpeeds.vxMetersPerSecond * tof,
+    //     fieldSpeeds.vyMetersPerSecond * tof
+    // );
 
-    m_virtualDist = Math.abs(pose.getTranslation().getDistance(m_virtualTarget.getTranslation()));
+    // // 4. Create the Virtual Target
+    // // Subtract the drift from the goal's real location
+    // Translation2d virtualTargetTranslation = m_aimTarget.getTranslation().minus(ballDrift);
 
+    // // 5. Update your Turret/Drive to aim at THIS Translation2d
+    // m_virtualTarget = new Pose2d(virtualTargetTranslation, new Rotation2d());    
+
+    // // 1. Convert current distance to inches for the regression
+    // double currentDistInches = Units.metersToInches(m_targetDist);
+    // double tof = -0.000000425 * Math.pow(currentDistInches, 2) + 0.00767 * currentDistInches + 0.413;
+
+    // // 2. Calculate velocity at shooter
+    // ChassisSpeeds robotVel = getRobotVelocity();
+    // double shooterVx = robotVel.vxMetersPerSecond - (robotVel.omegaRadiansPerSecond * Flywheel.FLYWHEEL_OFFSET.getY());
+    // double shooterVy = robotVel.vyMetersPerSecond + (robotVel.omegaRadiansPerSecond * Flywheel.FLYWHEEL_OFFSET.getX());
+
+    // // 3. Iteration Step: Find virtual target once to refine TOF
+    // Twist2d twist = new Twist2d(-shooterVx * tof, -shooterVy * tof, -robotVel.omegaRadiansPerSecond * tof);
+    // Pose2d intermediateTarget = m_aimTarget.exp(twist);
+
+    // // 4. Update TOF based on the virtual distance
+    // double virtualDistInches = Units.metersToInches(Math.abs(pose.getTranslation().getDistance(intermediateTarget.getTranslation())));
+    // double refinedTof = -0.000000425 * Math.pow(virtualDistInches, 2) + 0.00767 * virtualDistInches + 0.413;
+
+    // // 5. Final Virtual Target
+    // Twist2d finalTwist = new Twist2d(-shooterVx * refinedTof, -shooterVy * refinedTof, -robotVel.omegaRadiansPerSecond * refinedTof);
+    // m_virtualTarget = m_aimTarget.exp(finalTwist);
+
+    // m_virtualDist = Math.abs(pose.getTranslation().getDistance(m_virtualTarget.getTranslation()));
 
     field.setRobotPose(pose);
     field.getObject("target").setPose(m_aimTarget);
-    field.getObject("vtarget").setPose(m_virtualTarget);
+    // field.getObject("vtarget").setPose(m_virtualTarget);
     SmartDashboard.putString("Shooter/Aim Mode", m_aimMode.toString());
-    SmartDashboard.putNumber("Shooter/Target Distance", m_targetDist);
+    SmartDashboard.putNumber("Shooter/Target Distance (in)", distance);
+    SmartDashboard.putNumber("Shooter/SpeedAway (in_s)", speedAway);
+    SmartDashboard.putNumber("Shooter/TanSpeed (in_s)", tanSp);
+    SmartDashboard.putNumber("Shooter/OffsetAngle (deg)", robotOffsetAngle);
+    SmartDashboard.putNumber("Shooter/Power", shooterPower);
+    // SmartDashboard.putNumber("Shooter/Target Distance", m_targetDist);
+    // SmartDashboard.putNumber("Shooter/VTarget Distance", m_virtualDist);
   }
 
   @Override
@@ -195,14 +257,24 @@ public class SwerveSubsystem extends SubsystemBase {
    * Gets where the robot should aim based on its location on the field.
    */
   public Pose2d getTarget() {
-    return m_virtualTarget; 
+    return m_aimTarget; 
   }
 
   /**
    * Gets how far the calculated aim target is from the robot, in meters.
    */
   public double getTargetDistance() {
-    return m_virtualDist;
+    return m_targetDist;
+  }
+
+  public Rotation2d getTargetOffset()
+  {
+    return Rotation2d.fromDegrees(robotOffsetAngle);
+  }
+
+  public double getShootSpeed() {
+    // return 0.897781 * shooterPower - 11.46442; // Convert to rad/s
+    return 0.143975 * shooterPower - 11.79053;
   }
 
   /**
@@ -591,6 +663,15 @@ public class SwerveSubsystem extends SubsystemBase {
    */
   public Rotation2d getPitch() {
     return swerveDrive.getPitch();
+  }
+
+  /**
+   * Gets the current roll angle of the robot, as reported by the imu.
+   * 
+   * @return The heading as a {@link Rotation2d} angle
+   */
+  public Rotation2d getRoll() {
+    return swerveDrive.getRoll();
   }
 
   /**

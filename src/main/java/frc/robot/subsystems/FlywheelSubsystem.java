@@ -79,11 +79,11 @@ public class FlywheelSubsystem extends SubsystemBase {
    * Targets the top of the hub (72 in. above floor)
    * @param hubDist Distance from the robot to the hub, in meters.
    */
-  public void setSpeedHubDist(double hubDistIn) {
-    double hubDist = Units.metersToInches(hubDistIn);
+  public void setSpeedHubDist(double hubDist) {
+    double hubDistIn = Units.metersToInches(hubDist)-13.5; // regression was tuned in inches measured from front of robot
     // m_desiredSpeed = 0.1*hubDist + 22.25; // high height, including regression data at 45 rad/s and above
     // m_desiredSpeed = 0.1185*hubDist + 18.635; // with lower hub target height (65 in.)
-    m_desiredSpeed = 3.777704*Math.pow(hubDist, 0.455459); // reg height power
+    m_desiredSpeed = 3.777704*Math.pow(hubDistIn, 0.455459); // reg height power
     // m_desiredSpeed = 3.4475*Math.pow(hubDist, 0.471726); // low height power
     // m_desiredSpeed = 0.11925*hubDist + 18.3; // with lowest hub target height (60 in.)
     // m_desiredSpeed = 0.1175*hubDist + 19.15; // ignoring regression data at 45 rad/s and above
@@ -94,10 +94,10 @@ public class FlywheelSubsystem extends SubsystemBase {
    * Targets the closest corner of the alliance zone, about 2.15 meters away from the wall diagonally.
    * @param feedDistIn Distance from the robot to the alliance zone corner, in meters.
    */
-  public void setSpeedFeedDist(double feedDistIn) {
-    double feedDist = Units.metersToInches(feedDistIn);
+  public void setSpeedFeedDist(double feedDist) {
+    double feedDistIn = Units.metersToInches(feedDist)-13.5; // regression was tuned in inches measured from front of robot
     // m_desiredSpeed = 1.542*Math.pow(feedDist, 0.62); // including full regression data, power regression
-    m_desiredSpeed = 0.1215*feedDist + 15.31;
+    m_desiredSpeed = 0.1215*feedDistIn + 15.31;
   }
 
   /**

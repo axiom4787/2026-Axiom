@@ -65,7 +65,7 @@ public class Constants {
 
         public static final double FLYWHEEL_CONVERSION_FACTOR = (2.0 / Math.PI) / 60;
 
-        public static final Translation2d FLYWHEEL_OFFSET = new Translation2d(0.2, 0.0); // TODO: check cad for correct offset
+        public static final Translation2d FLYWHEEL_OFFSET = new Translation2d(0.0, 0.0); // TODO: check cad for correct offset
 
     }
     public static final class Conveyor {
@@ -112,10 +112,12 @@ public class Constants {
         // Targets for the shooter to aim at
         public static final Pose2d BLUE_HUB = makeTarget(4.625, CENTER_LINE_Y);
         public static final Pose2d RED_HUB = makeTarget(FIELD_LENGTH-4.625, CENTER_LINE_Y);
-        public static final Pose2d BLUE_PASS_OUTPOST = makeTarget(1.5, 1.5);
-        public static final Pose2d BLUE_PASS_DEPOT = makeTarget(1.5, FIELD_WIDTH-1.5);
-        public static final Pose2d RED_PASS_OUTPOST = makeTarget(FIELD_LENGTH-1.5, FIELD_WIDTH-1.5);
-        public static final Pose2d RED_PASS_DEPOT = makeTarget(FIELD_LENGTH-1.5, 1.5);
+        public static final Pose2d BLUE_SIM_START = makeTarget(3.57, CENTER_LINE_Y);
+        public static final Pose2d RED_SIM_START = makeTarget(FIELD_LENGTH-3.57, CENTER_LINE_Y);
+        public static final Pose2d BLUE_PASS_OUTPOST = makeTarget(0, 1);
+        public static final Pose2d BLUE_PASS_DEPOT = makeTarget(0, FIELD_WIDTH-1);
+        public static final Pose2d RED_PASS_OUTPOST = makeTarget(FIELD_LENGTH-0, FIELD_WIDTH-1);
+        public static final Pose2d RED_PASS_DEPOT = makeTarget(FIELD_LENGTH-0, 1);
     }
 
     public static class Limelight {
