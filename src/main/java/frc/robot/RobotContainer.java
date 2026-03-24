@@ -74,11 +74,11 @@ public class RobotContainer {
     .scaleTranslation(0.5)
     .scaleRotation(0.5));
   
-  // Command to drive robot while aiming at a target
-  Command driveWithAimCommand = m_swerveSubsystem.driveFieldOriented(baseStream.copy()
-    .scaleTranslation(0.5)
-    .aim(m_swerveSubsystem::getTarget)
-    .aimWhile(true));
+  // // Command to drive robot while aiming at a target
+  // Command driveWithAimCommand = m_swerveSubsystem.driveFieldOriented(baseStream.copy()
+  //   .scaleTranslation(0.5)
+  //   .aim(m_swerveSubsystem::getTarget)
+  //   .aimWhile(true));
 
   public RobotContainer() {
     NEURALINK();
@@ -112,11 +112,11 @@ public class RobotContainer {
 
     // Right Bumper: Toggle shooter flywheel on/off. Flywheel speed will be set based on the reported aim target.
     m_driverController.rightBumper().toggleOnTrue(new RunCommand(() -> {
-      double dist = m_swerveSubsystem.getTargetDistance();
       if (m_swerveSubsystem.getAimMode() == AimMode.HUB) {
-        m_flywheelSubsystem.setSpeedHubDist(dist);
+        // m_flywheelSubsystem.setSpeedHubDist(dist);
+        m_flywheelSubsystem.setDesiredSpeed(m_swerveSubsystem.getShootSpeed());
       } else {
-        m_flywheelSubsystem.setSpeedFeedDist(dist);
+        m_flywheelSubsystem.setSpeedFeedDist(m_swerveSubsystem.getTargetDistance());
       }
     }, m_flywheelSubsystem));
 
@@ -203,6 +203,8 @@ public class RobotContainer {
       m_swerveSubsystem.driveFieldOriented(baseStream.copy()
         .scaleTranslation(0.5)
         .aim(m_swerveSubsystem::getTarget)
+        .aimHeadingOffset(m_swerveSubsystem.getTargetOffset()) // Aim with offset for shoot on the move
+        .aimHeadingOffset(m_swerveSubsystem.getAimMode() == AimMode.HUB) // Shoot on the move not tuned for feeding
         .aimWhile(true).get());
     }, m_swerveSubsystem));
     m_driverController.y().whileTrue(driveAngVelSlowCommand);

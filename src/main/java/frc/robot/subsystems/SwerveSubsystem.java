@@ -59,11 +59,11 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private Pose2d m_aimTarget = Pose2d.kZero;
 
-  private Pose2d m_virtualTarget = new Pose2d();
+  // private Pose2d m_virtualTarget = new Pose2d();
 
   private double m_targetDist = 0;
 
-  private double m_virtualDist = 0;
+  // private double m_virtualDist = 0;
 
   private Field2d field = new Field2d();
 
@@ -142,7 +142,9 @@ public class SwerveSubsystem extends SubsystemBase {
 
     m_targetDist = Math.abs(pose.getTranslation().getDistance(m_aimTarget.getTranslation()));
 
-    m_virtualTarget = Multitasking.calculate(m_aimTarget, pose, getFieldVelocity());
+    // TODO: calculate alpha and v_0 based on regressions and make them private class variables
+
+    // m_virtualTarget = Multitasking.calculate(m_aimTarget, pose, getFieldVelocity());
     // 1. Get Field-Relative Robot Velocity
     // We need to know how the robot is moving relative to the FLOOR, not itself.
     // ChassisSpeeds fieldSpeeds = getFieldVelocity();
@@ -189,14 +191,14 @@ public class SwerveSubsystem extends SubsystemBase {
     // Twist2d finalTwist = new Twist2d(-shooterVx * refinedTof, -shooterVy * refinedTof, -robotVel.omegaRadiansPerSecond * refinedTof);
     // m_virtualTarget = m_aimTarget.exp(finalTwist);
 
-    m_virtualDist = Math.abs(pose.getTranslation().getDistance(m_virtualTarget.getTranslation()));
+    // m_virtualDist = Math.abs(pose.getTranslation().getDistance(m_virtualTarget.getTranslation()));
 
     field.setRobotPose(pose);
     field.getObject("target").setPose(m_aimTarget);
-    field.getObject("vtarget").setPose(m_virtualTarget);
+    // field.getObject("vtarget").setPose(m_virtualTarget);
     SmartDashboard.putString("Shooter/Aim Mode", m_aimMode.toString());
-    SmartDashboard.putNumber("Shooter/Target Distance", m_targetDist);
-    SmartDashboard.putNumber("Shooter/VTarget Distance", m_virtualDist);
+    // SmartDashboard.putNumber("Shooter/Target Distance", m_targetDist);
+    // SmartDashboard.putNumber("Shooter/VTarget Distance", m_virtualDist);
   }
 
   @Override
@@ -226,14 +228,23 @@ public class SwerveSubsystem extends SubsystemBase {
    * Gets where the robot should aim based on its location on the field.
    */
   public Pose2d getTarget() {
-    return m_virtualTarget; 
+    return m_aimTarget; 
   }
 
   /**
    * Gets how far the calculated aim target is from the robot, in meters.
    */
   public double getTargetDistance() {
-    return m_virtualDist;
+    return m_targetDist;
+  }
+
+  public Rotation2d getTargetOffset()
+  {
+    return Rotation2d.kZero; // TODO: return alpha based on regression
+  }
+
+  public double getShootSpeed() {
+    return 0.0; // TODO: return flywheel speed based on v_0 regression
   }
 
   /**
