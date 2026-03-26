@@ -95,9 +95,9 @@ public class FlywheelSubsystem extends SubsystemBase {
    * @param feedDistIn Distance from the robot to the alliance zone corner, in meters.
    */
   public void setSpeedFeedDist(double feedDist) {
-    double feedDistIn = Units.metersToInches(feedDist)-13.5; // regression was tuned in inches measured from front of robot
-    // m_desiredSpeed = 1.542*Math.pow(feedDist, 0.62); // including full regression data, power regression
-    m_desiredSpeed = 0.1215*feedDistIn + 15.31;
+    double feedDistIn = Units.metersToInches(feedDist)-7; // regression was tuned in inches measured from front of robot
+    m_desiredSpeed = 1.542*Math.pow(feedDistIn, 0.62); // including full regression data, power regression
+    // m_desiredSpeed = 0.1215*feedDistIn + 15.31;
   }
 
   /**
@@ -110,15 +110,6 @@ public class FlywheelSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // When the shooter is disabled or needs to decrease speed, we don't want it to quickly come to a stop with PID.
-    // Rather, we want it to coast slowly to a stop or down to the new setpoint to avoid damaging the chains.
-    // Essentially, the shooter should never run backward if possible, so that the chain always rotates one way.
-    // if (m_desiredSpeed == 0 || m_currentSpeed > m_desiredSpeed) {
-    //   m_rightMotor.setVoltage(0);
-    //   return;
-    // }
-
-    // Regular PID/Feedforward logic
     m_currentSpeed = m_rightMotor.getEncoder().getVelocity();
 
     SmartDashboard.putString("Shooter/Velocity Text", String.format("%.2f", m_currentSpeed));

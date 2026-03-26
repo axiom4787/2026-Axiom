@@ -20,11 +20,24 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void robotInit() {}
+  public void robotInit() {
+    SmartDashboard.putBoolean("SOTM", false);
+  }
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
+    double matchTime = DriverStation.getMatchTime();
+    SmartDashboard.putNumber("Match Time", matchTime);
+    if (matchTime > 140) {
+      SmartDashboard.putNumber("Active Shift Time", matchTime - 140);
+    } else if (matchTime > 130) {
+      SmartDashboard.putNumber("Active Shift Time", matchTime - 130);
+    } else if (matchTime > 30) {
+      SmartDashboard.putNumber("Active Shift Time", ((matchTime - 30) % 25));
+    } else {
+      SmartDashboard.putNumber("Active Shift Time", matchTime);
+    }
+
   }
 
   @Override

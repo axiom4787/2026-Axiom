@@ -20,22 +20,22 @@ public class Constants {
         public static final double CONTROLLER_DEADBAND = 0.1;
 
         public static final PPHolonomicDriveController PP_CONTROLLER = new PPHolonomicDriveController(
-            new PIDConstants(15.0, 0.0, 0.05),  // translation PID
-            new PIDConstants(12.0, 0.0, 0.05)); // rotation PID
+            new PIDConstants(5.0, 0.0, 0.0),  // translation PID
+            new PIDConstants(5.0, 0.0, 0.0)); // rotation PID
 
     }
     public static final class IntakeRoller {
         public static final int MOTOR_ID = 12;
 
-        public static final double INTAKE_SETPOINT = 120;
+        public static final double INTAKE_SETPOINT = 200;
 
         public static final double INTAKE_S = 0.5;
-        public static final double INTAKE_V = 0.017;
+        public static final double INTAKE_V = 0.021;
         public static final double INTAKE_P = 0.0;
         public static final double INTAKE_I = 0.0;
         public static final double INTAKE_D = 0.0;
 
-        public static final double INTAKE_GEAR_RATIO = (1.0 / 3.0) * (26.0 / 24.0) * (19.0 / 24.0);
+        public static final double INTAKE_GEAR_RATIO = (6.0 / 7.0);
 
         public static final double INTAKE_CONVERSION_FACTOR = ((2.0 * Math.PI) / 60) * INTAKE_GEAR_RATIO;
     }
@@ -70,14 +70,14 @@ public class Constants {
     }
     public static final class Conveyor {
         public static final int MOTOR_ID = 7;
-        public static final double FEED_POWER = 1;
+        public static final double FEED_POWER = 0.75;
         public static final double INTAKE_POWER = 0.2;
         public static final double EJECT_POWER = -1;
     }
     public static final class Indexer {
         public static final int MOTOR_ID = 8;
-        public static final double FEED_POWER = 1.0;
-        public static final double EJECT_POWER = -1.0;
+        public static final double FEED_POWER = 0.75;
+        public static final double EJECT_POWER = -1.0; 
     }
     public static final class Enlighten {
         public static final int LIGHT_ID = 0;
@@ -92,9 +92,9 @@ public class Constants {
         public static final double SHOOT_COLOR_ID = -0.05; // Strobe White
     }
 
-    // Time saved using this method: 12 seconds
-    // Time spent writing this method: 11.999 seconds
-    // Overall judgement: Innovative And Efficient Refactoring
+    // Time saved using this method: 12 seconds 
+    // Time spent writing this method: 11.999 seconds 
+    // Overall judgement: Innovative And Efficient Refactoring 
     private static Pose2d makeTarget(double x, double y)
     {
         return new Pose2d(new Translation2d(x, y), Rotation2d.kZero);
@@ -118,13 +118,16 @@ public class Constants {
         public static final Pose2d BLUE_PASS_DEPOT = makeTarget(0, FIELD_WIDTH-1);
         public static final Pose2d RED_PASS_OUTPOST = makeTarget(FIELD_LENGTH-0, FIELD_WIDTH-1);
         public static final Pose2d RED_PASS_DEPOT = makeTarget(FIELD_LENGTH-0, 1);
+
+        // Auto starting positions, used to reset odometry at the beginning of auto
+        public static final Pose2d BLUE_START_DEPOT = new Pose2d(4, 7.25, Rotation2d.fromDegrees(-79));
+        public static final Pose2d BLUE_START_OUTPOST = new Pose2d(4, FIELD_WIDTH - 7.25, Rotation2d.fromDegrees(79));
+        public static final Pose2d RED_START_OUTPOST = new Pose2d(FIELD_LENGTH-4, 7.25, Rotation2d.fromDegrees(-101));
+        public static final Pose2d RED_START_DEPOT = new Pose2d(FIELD_LENGTH-4, FIELD_WIDTH - 7.25, Rotation2d.fromDegrees(101));
     }
 
     public static class Limelight {
-        public static final String LL3LEFT_NAME = "limelight-zarqa"; // Look up Zarqa Al-Yamama for ball knowledge
-
-        // Ignorance is bliss.
-        public static final Matrix<N3, N1> SINGLE_TAG_STD_DEVS = VecBuilder.fill(4, 4, 8);
-        public static final Matrix<N3, N1> MULTI_TAG_STD_DEVS = VecBuilder.fill(0.5, 0.5, 1);
+        public static final String LL3RIGHT_NAME = "limelight-yamama";
+        public static final String LL2LEFT_NAME = "limelight-zarqa"; // Look up Zarqa Al-Yamama for ball knowledge
     }
 }

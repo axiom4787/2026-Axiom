@@ -53,15 +53,6 @@ public class IntakeRollerSubsystem extends SubsystemBase {
     m_desiredSpeed = desiredSpeed;
   }
 
-  // /**
-  //  * Sets the duty cycle of the intake roller motor, i.e. what percent of the time the motor is active.
-  //  * @param motorPower A value between -1.0 and 1.0; negative values run the motor in reverse.
-  //  */
-  // public void setPower(double motorPower) {
-  //   m_motorPower = motorPower;
-  //   m_motor.set(m_motorPower);
-  // }
-
 
   @Override
   public void periodic() {

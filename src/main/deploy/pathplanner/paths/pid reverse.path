@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.5,
-        "y": 7.0
-      },
-      "prevControl": null,
-      "nextControl": {
-        "x": 1.6767766952966368,
-        "y": 6.8232233047033635
-      },
-      "isLocked": false,
-      "linkedName": "pid1"
-    },
-    {
-      "anchor": {
         "x": 3.0,
         "y": 5.5
       },
-      "prevControl": {
+      "prevControl": null,
+      "nextControl": {
         "x": 2.823223304703363,
         "y": 5.6767766952966365
       },
-      "nextControl": null,
       "isLocked": false,
       "linkedName": "pid2"
+    },
+    {
+      "anchor": {
+        "x": 1.5,
+        "y": 7.0
+      },
+      "prevControl": {
+        "x": 1.6767766952966368,
+        "y": 6.8232233047033635
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "pid1"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -135.0
+    "rotation": 45.0
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 45.0
+    "rotation": -135.0
   },
   "useDefaultConstraints": true
 }

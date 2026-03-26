@@ -20,13 +20,7 @@ public class IntakeArmSubsystem extends SubsystemBase {
   private final SparkMax m_motor = new SparkMax(
       IntakeArm.MOTOR_ID, MotorType.kBrushless);
 
-  // private final PIDController m_armPID = new PIDController(
-  //   IntakeArm.ARM_P, 
-  //   IntakeArm.ARM_I, 
-  //   IntakeArm.ARM_D);
-
-  // private boolean m_isDeployed = false; // True if the intake should be deployed, false if it should be stowed.
-  private double m_motorPower = 0; // Represents the actual angle of the intake arm via encoder.
+  private double m_motorPower = 0;
 
   /** Creates a new IntakeArmSubsystem. */
   public IntakeArmSubsystem() {
@@ -41,8 +35,6 @@ public class IntakeArmSubsystem extends SubsystemBase {
         config,
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
-    
-    m_motor.getEncoder().setPosition(0);
   }
 
   public void setPower(double motorPower)

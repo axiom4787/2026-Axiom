@@ -6,14 +6,11 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.LimelightHelpers.PoseEstimate;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.Timer;
 
 /** The state of knowing an effect before its cause has fully manifested. */
 public class TagPrescience {
@@ -28,11 +25,11 @@ public class TagPrescience {
   }
 
   /** Discerns a revelation. */
-  public Revelation consult(double yaw, double pitch, double roll) {
+  public Revelation consult(double yaw) {
     // To remove pose ambiguity, the limelight needs to know the current robot orientation
-    LimelightHelpers.SetRobotOrientation(m_name, yaw, 0, pitch, 0, roll, 0);
+    LimelightHelpers.SetRobotOrientation(m_name, yaw, 0, 0, 0, 0, 0);
 
-    PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(m_name);
+    PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue(m_name);
 
     boolean isManifest = mt2.tagCount > 0;
     double baseStdDev = 0.05; // TODO: Tune

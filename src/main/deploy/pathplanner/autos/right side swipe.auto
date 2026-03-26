@@ -48,6 +48,12 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "RTS-RTSH"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "Score Hub"
