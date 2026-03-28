@@ -80,7 +80,7 @@ public class FlywheelSubsystem extends SubsystemBase {
    * @param hubDist Distance from the robot to the hub, in meters.
    */
   public void setSpeedHubDist(double hubDist) {
-    double hubDistIn = Units.metersToInches(hubDist)-13.5; // regression was tuned in inches measured from front of robot
+    double hubDistIn = Units.metersToInches(hubDist); // regression was tuned in inches measured from front of robot
     // m_desiredSpeed = 0.1*hubDist + 22.25; // high height, including regression data at 45 rad/s and above
     // m_desiredSpeed = 0.1185*hubDist + 18.635; // with lower hub target height (65 in.)
     m_desiredSpeed = 3.777704*Math.pow(hubDistIn, 0.455459); // reg height power
@@ -120,6 +120,12 @@ public class FlywheelSubsystem extends SubsystemBase {
 
     SmartDashboard.putData("Shooter/PID", m_flywheelPID);
 
+    if (m_desiredSpeed == 0.0) {
+      m_rightMotor.setVoltage(0);
+      SmartDashboard.putNumber("Shooter/Feedforward", 0);
+      SmartDashboard.putNumber("Shooter/Feedback", 0);
+      return;
+    }
     double feedforward = m_flywheelFF.calculate(m_desiredSpeed);
 
     double feedback = m_flywheelPID.calculate(m_currentSpeed, m_desiredSpeed);

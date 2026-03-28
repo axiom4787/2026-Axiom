@@ -103,7 +103,7 @@ public class RobotContainer {
       m_intakeRollerSubsystem.setDesiredSpeed(IntakeRoller.INTAKE_SETPOINT);
       m_conveyorSubsystem.setPower(Conveyor.INTAKE_POWER);
       m_indexerSubsystem.setPower(Indexer.EJECT_POWER);
-    }, m_intakeRollerSubsystem, m_conveyorSubsystem, m_indexerSubsystem));
+    }, m_intakeRollerSubsystem, m_conveyorSubsystem, m_indexerSubsystem, m_flywheelSubsystem));
 
     m_driverController.leftTrigger(0.25)/*.and(m_intakeArmSubsystem::isDeployed)*/.whileTrue(new RunCommand(() -> {
       m_lighthouse.guide(Semaphore.INTAKE);
@@ -126,7 +126,6 @@ public class RobotContainer {
       }
     }, m_flywheelSubsystem, m_lighthouse)
     .until(m_flywheelSubsystem::atSpeed)
-    .andThen(new WaitCommand(0.25))
     .andThen(new RunCommand(() -> {
       if (m_swerveSubsystem.getAimMode() == AimMode.HUB) {
         if (isSOTM()) {
@@ -139,7 +138,7 @@ public class RobotContainer {
       }
       m_indexerSubsystem.setPower(Indexer.FEED_POWER);
       m_conveyorSubsystem.setPower(Conveyor.FEED_POWER);
-      m_intakeRollerSubsystem.setDesiredSpeed(IntakeRoller.INTAKE_SETPOINT/2);
+      m_intakeRollerSubsystem.setDesiredSpeed(IntakeRoller.INTAKE_SETPOINT);
       m_lighthouse.guide(Semaphore.SHOOT);
     }, m_indexerSubsystem, m_conveyorSubsystem, m_flywheelSubsystem, m_intakeRollerSubsystem, m_lighthouse).withInterruptBehavior(InterruptionBehavior.kCancelIncoming)));
     
@@ -179,8 +178,11 @@ public class RobotContainer {
       m_conveyorSubsystem.setPower(0);
     }, m_conveyorSubsystem));
 
+    SmartDashboard.putBoolean("Idle Flywheel", true);
     m_flywheelSubsystem.setDefaultCommand(new RunCommand(() -> {
-			m_flywheelSubsystem.setDesiredSpeed(0.0);
+      boolean idle = SmartDashboard.getBoolean("Idle Flywheel", false);
+      boolean inMiddle = m_swerveSubsystem.getAimMode() == AimMode.FEED;
+      m_flywheelSubsystem.setDesiredSpeed(idle ? (inMiddle ? 40 : 25) : 0);
 		}, m_flywheelSubsystem));
 
     // LEDs indicate whether the hub is active by default.
@@ -216,7 +218,7 @@ public class RobotContainer {
   }
 
   public boolean isSOTM() {
-    return SmartDashboard.getBoolean("SOTM", false);
+    return false;
   }
 
   public void registerNamedCommands() {
@@ -233,7 +235,7 @@ public class RobotContainer {
         m_flywheelSubsystem.setSpeedHubDist(m_swerveSubsystem.getTargetDistance());
         m_conveyorSubsystem.setPower(Conveyor.FEED_POWER);
         m_indexerSubsystem.setPower(Indexer.FEED_POWER);
-      }, m_conveyorSubsystem, m_indexerSubsystem, m_flywheelSubsystem).withTimeout(7.0))
+      }, m_conveyorSubsystem, m_indexerSubsystem, m_flywheelSubsystem).withTimeout(4.0))
       .andThen(new InstantCommand(() -> {
         m_indexerSubsystem.setPower(0);
         m_conveyorSubsystem.setPower(0);

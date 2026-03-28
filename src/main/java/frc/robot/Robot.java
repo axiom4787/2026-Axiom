@@ -21,7 +21,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    SmartDashboard.putBoolean("SOTM", false);
+    // SmartDashboard.putBoolean("SOTM", false);
   }
   @Override
   public void robotPeriodic() {
